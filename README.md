@@ -3,7 +3,7 @@ Amount splitter aplication for ethereum - Project 1 - Ethereum Developer Course 
 
 ## Installation
 
-Install [ganache](https://github.com/trufflesuite/ganache) runing on 127.0.0.1:7545 
+Install [ganache](https://github.com/trufflesuite/ganache) running on 127.0.0.1:7545 
 or [geth](https://geth.ethereum.org/) to have blockchain access.
 
 Install [MetaMask](https://metamask.io)
