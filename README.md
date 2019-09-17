@@ -5,7 +5,7 @@ Amount splitter aplication for ethereum - Project 1 - Ethereum Developer Course 
 
 Install [ganache](https://github.com/trufflesuite/ganache) or [geth](https://geth.ethereum.org/) to have blockchain access.
 
-Use npm to install the required dependencies (truffle and lite-server).
+Clone the repo and use npm to install the required dependencies (truffle and lite-server).
 
 ```bash
 npm install
