@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Splitter</title>
+
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/mycss.css" rel="stylesheet">
+	<link href="css/spinner.css" rel="stylesheet">
+</head>
+
+<body>
+
+	<nav class="navbar navbar-dark bg-dark">
+		<span class="navbar-brand mb-0 ml-5 h1">Splitter Project</span>
+	</nav>
+
+	<div class="container-fluid mt-2">
+		<div class="row" style="margin:auto;">
+			<div class="col scene_element fadeInDownB">
+				<div class="container mt-2">
+					<div class="row" style="margin:auto;">
+						<div class="col col-md mt-4">
+							<form novalidate>
+								<div class="form-row">
+									<label for="aliceAddress" class="col-2 col-form-label mb-3">
+										Alice address
+									</label>
+									<label id="aliceAddress" class="col-10 col-form-label" title="This is your address">
+
+									</label>
+									<label for="aliceBalance" class="col-2 col-form-label mb-3">
+										Alice balance
+									</label>
+									<div id="aliceBalance" class="col-5 col-form-label" title="This is your balance in WEI">
+									</div>
+									<div class="col-1" style="font-size: 25px">
+										=
+									</div>
+									<div id="aliceBalanceEth" class="col-4 col-form-label text-right" title="This is your balance in ETH">
+									</div>
+									<label style="cursor: pointer" for="amount" class="col-2 col-form-label mb-3">
+										WEI Amount
+									</label>
+									<div class="col-5 splitClass">
+										<input type="number" min="2" step="2" class="form-control" id="amount"
+											onkeypress="return numbersOnly(event)"
+											onkeyup="App.changeAmount(); validateBigAmount()"
+											placeholder="Amount (in WEI) you want to split" pattern="[(0-9)]{1,18}"
+											autofocus required>
+										<div class="valid-feedback">
+											Looks good!
+										</div>
+										<div class="invalid-feedback">
+											Even number and greater than zero (don't be greedy!)
+										</div>
+									</div>
+									<div class="col-1" style="font-size: 25px">=</div>
+									<div id="amountEth" class="col-4 col-form-label text-right" title="This is the amount (in ETH) you want to split">
+									</div>
+									<hr>
+									<label style="cursor: pointer" for="bobAddress" class="col-2 col-form-label mb-3">
+										Bob address
+									</label>
+									<div class="col-10 splitClass">
+										<input type="text" class="form-control" id="bobAddress"
+											onkeypress="return hexOnly(event)" onchange="App.updateBalanceBob()"
+											onkeyup="App.updateBalanceBob()" placeholder="Bob account here"
+											pattern="[(A-f),(0-9),(x)]{42}" required>
+										<div class="valid-feedback">
+											I wish I was Bob!
+										</div>
+										<div class="invalid-feedback">
+											Must be a valid ethereum address!
+										</div>
+									</div>
+									<label style="cursor: pointer" for="bobBalance" class="col-2 col-form-label mb-3">
+										Bob balance
+									</label>
+									<div id="bobBalance" class="col-5 col-form-label" title="This is Bob balance">
+									</div>
+									<div class="col-1" style="font-size: 25px">=</div>
+									<div id="bobBalanceEth" class="col-4 col-form-label text-right" title="This is Bob balance in Eth">
+									</div>
+									<hr>
+									<label style="cursor: pointer" for="carolAddress" class="col-2 col-form-label mb-3">
+										Carol address
+									</label>
+									<div class="col-10 splitClass">
+										<input type="text" class="form-control" id="carolAddress"
+											onkeypress="return hexOnly(event)" onchange="App.updateBalanceCarol()"
+											onkeyup="App.updateBalanceCarol()" placeholder="Carol account here"
+											pattern="[(A-f),(0-9),(x)]{42}" required>
+										<div class="valid-feedback">
+											Carol will clap with her ears for so much happiness!
+										</div>
+										<div class="invalid-feedback">
+											Must be a valid ethereum address!
+										</div>
+									</div>
+									<label style="cursor: pointer" for="carolBalance" class="col-2 col-form-label mb-3">
+										Carol balance
+									</label>
+									<div id="carolBalance" class="col-5 col-form-label" title="This is Carol balance">
+									</div>
+									<div class="col-1" style="font-size: 25px">=</div>
+									<div id="carolBalanceEth" class="col-4 col-form-label text-right" title="This is Carol balance in Eth">
+									</div>
+								</div>
+							</form>
+							<div class="text-center">
+								<button id="splitAmount" class="btn btn-success" style="margin: 4px;">
+									Split Alice amount
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col col-md-4" id="outputScreen">
+				<h5 class=" text-center ribbon4 scene_element fadeInDownB">Current Transaction</h5>
+				<div id="txStatusUp" style="min-height: 30vh;"></div>
+				<h5 class=" text-center ribbon4 scene_element fadeInDownB">Logs</h5>
+				<!--<hr> class="container-fluid"-->
+				<div>
+					<div>
+						<div class="row">
+							<div id="txStatus" class="col" style="margin:auto">
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="js/jquery-3.3.1.min.js"></script>
+		<script src="js/bootstrap.js"></script>
+		<script src="js/truffle-contract.js" charset="UTF-8"></script>
+		<script src="js/BigInteger.min.js" charset="UTF-8"></script>
+		<script src="js/validations.js" charset="UTF-8"></script>
+		<script src="js/app.js" charset="UTF-8"></script>
+		<script src="js/assist.min.js"></script>
+		<script src="js/blocknative.js"></script>
+</body>
+
+</html>
