@@ -108,9 +108,9 @@ function validateBigAmount() {
 }
 
 
-function showAlert(field, mensaje) {
+function showAlert(field, message) {
   $(field).append(`<div id="alertWarning" style="overflow-wrap: break-word;" class="scene_element fadeInDown col-12 text-center"><div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <strong>${mensaje}
+    <strong>${message}
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -122,6 +122,30 @@ function showAlert(field, mensaje) {
     document.getElementById("alertWarning").setAttribute("style", "display:true");
     //$(this).remove();  
     $("#alertWarning").delay(300).fadeOut(0, function () {
+      $(this).remove();
+    });
+  });
+}
+
+function showSuccess(field, message, time) {
+  if (time == null) {
+    _time = 3000;
+  } else {
+    _time = time * 1000;
+  }
+  $(field).append(`
+  <div id="successAlert" class="scene_element fadeInDown col-12 text-center">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <strong>${message}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  </div>`);
+  $("#successAlert").delay(_time).fadeOut(0, function () {
+    $(this).addClass('fadeOutUp');
+    document.getElementById("successAlert").setAttribute("style", "display:true");
+    $("#successAlert").delay(300).fadeOut(0, function () {
       $(this).remove();
     });
   });

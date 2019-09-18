@@ -74,6 +74,67 @@ App = {
     $(document).on('click', '#splitAmount', App.splitAmount);
   },
 
+  sendAmount: function () {
+    $(".spinnerCube").empty();
+    $("#txStatusUp").empty();
+    if ($('#amount').val() == "") {
+      showAlert(txStatusUp, 'Fill in the Amount field');
+    } else {
+      cubeSpinner('#txStatusUp');
+      var account = web3.eth.accounts[0];
+      var amount = $('#amount').val();
+      var amountEth = web3.fromWei(amount, "ether") + " ETH";
+      App.decoredSplitter.sendAmount({
+          from: account,
+          value: amount
+        })
+        .then(async function () {
+          await App.minedTransaction().then(function (response) {
+            if (response == true) {
+              $(".spinnerCube").empty();
+              App.currentAccount();
+              App.updateBalanceAlice();
+              showSuccess(txStatusUp, "Congratulations, you just made a deposit to your account for the value of: " + amountEth, 10)
+            }
+          }) // wait till the promise resolves (*)
+        }).catch(function (err) {
+          $(".spinnerCube").empty();
+          console.log(err.message);
+          showAlert(txStatusUp, 'Transaction rejected: ' + err.message);
+        });
+    }
+  },
+
+  withdraw: function () {
+    $(".spinnerCube").empty();
+    $("#txStatusUp").empty();
+    if ($('#amount').val() == "") {
+      showAlert(txStatusUp, 'Fill in the Amount field');
+    } else {
+      cubeSpinner('#txStatusUp');
+      var account = web3.eth.accounts[0];
+      var amount = $('#amount').val();
+      var amountEth = web3.fromWei(amount, "ether") + " ETH";
+      App.decoredSplitter.withdraw(amount, {
+          from: account
+        })
+        .then(async function () {
+          await App.minedTransaction().then(function (response) {
+            if (response == true) {
+              $(".spinnerCube").empty();
+              App.currentAccount();
+              App.updateBalanceAlice();
+              showSuccess(txStatusUp, "You just made a withdraw from your account for the value of: " + amountEth, 10)
+            }
+          }) // wait till the promise resolves (*)
+        }).catch(function (err) {
+          $(".spinnerCube").empty();
+          console.log(err.message);
+          showAlert(txStatusUp, 'Transaction rejected: ' + err.message);
+        });
+    }
+  },
+
   splitAmount: function () {
     $(".spinnerCube").empty();
     $("#txStatusUp").empty();
@@ -82,7 +143,7 @@ App = {
     } else {
       var account = web3.eth.accounts[0];
       var amount = $('#amount').val();
-      let amountEth = web3.fromWei(amount, "ether") + " ETH";
+      var amountEth = web3.fromWei(amount, "ether") + " ETH";
       var bobAddress = $('#bobAddress').val();
       var carolAddress = $('#carolAddress').val();
       cubeSpinner('#txStatusUp');
@@ -95,6 +156,7 @@ App = {
             if (response == true) {
               $(".spinnerCube").empty();
               App.currentAccount();
+              App.updateBalanceAlice();
               App.updateBalanceBob();
               App.updateBalanceCarol();
               $("#txStatusUp").append(`
@@ -147,12 +209,12 @@ App = {
         </table>`);
       eventoMostrar.watch(function (error, result) {
         if (!error) {
-          let datosEvento = result.args;
-          let amount = datosEvento.value;
-          let amountEth = web3.fromWei(amount, "ether") + " ETH";
-          let alice = datosEvento.alice;
-          let bob = datosEvento.bob;
-          let carol = datosEvento.carol;
+          var datosEvento = result.args;
+          var amount = datosEvento.value;
+          var amountEth = web3.fromWei(amount, "ether") + " ETH";
+          var alice = datosEvento.alice;
+          var bob = datosEvento.bob;
+          var carol = datosEvento.carol;
           $("#tableLogs tbody").after(`           
             <tr class="table table-light table-hover table-striped table-bordered rounded">
               <td class="p-1 text-center tdLogs">${cont}</td>   
@@ -165,6 +227,14 @@ App = {
           cont++;
         }
       });
+    })
+  },
+
+  updateBalanceAlice: function () {
+    var aliceAddress = web3.eth.accounts[0];
+    web3.eth.getBalance(aliceAddress, function (err, result) {
+      document.getElementById("aliceBalance").innerHTML = result + " WEI";
+      document.getElementById("aliceBalanceEth").innerHTML = web3.fromWei(result, "ether") + " ETH";
     })
   },
 
@@ -193,51 +263,51 @@ App = {
     try {
       var returnedValue = null;
       return new Promise((resolve, reject) => {
-          var accountInterval = setInterval(function () {
-            if (App.received !== null) {
-              if (App.received == true) {
-                App.received = null;
-                result(true);
-              } else {
-                App.received = null;
-                result(false);
-              }
-            }
-          }, 2000);
-
-          function result(valor) {
-            if (valor == true) {
-              clearInterval(accountInterval);
-              returnedValue = true;
-              show();
+        var accountInterval = setInterval(function () {
+          if (App.received !== null) {
+            if (App.received == true) {
+              App.received = null;
+              result(true);
             } else {
-              clearInterval(accountInterval);
-              returnedValue = false;
-              show();
+              App.received = null;
+              result(false);
             }
           }
+        }, 2000);
 
-          setTimeout(stall, 45000);
+        function result(valor) {
+          if (valor == true) {
+            clearInterval(accountInterval);
+            returnedValue = true;
+            show();
+          } else {
+            clearInterval(accountInterval);
+            returnedValue = false;
+            show();
+          }
+        }
 
-          function stall() {
-            if (returnedValue == null) {
-              assistInstance.notify('pending', 'It seems that the transaction has stalled, cancel it in metamask and resend it with a little more gas. You can close these notifications now.', {
-                customTimeout: 50000
-              });
-              setTimeout(cancelTX, 50000);
-            }
+        setTimeout(stall, 45000);
 
-            function cancelTX() {
-              clearInterval(accountInterval);
-            }
+        function stall() {
+          if (returnedValue == null) {
+            assistInstance.notify('pending', 'It seems that the transaction has stalled, cancel it in metamask and resend it with a little more gas. You can close these notifications now.', {
+              customTimeout: 50000
+            });
+            setTimeout(cancelTX, 50000);
           }
 
-          function show() {
-            return resolve(returnedValue);
+          function cancelTX() {
+            clearInterval(accountInterval);
           }
-        }).then(function (result) {
-          return result;
-        })
+        }
+
+        function show() {
+          return resolve(returnedValue);
+        }
+      }).then(function (result) {
+        return result;
+      })
     } catch (err) {
       alert(err); // TypeError: failed to fetch
     }
