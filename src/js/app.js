@@ -39,51 +39,43 @@ App = {
       var instanciaSplitter = App.web3Instance.eth.contract(App.SplitterAbi).at(App.SplitterAddress);
       App.decoredSplitter = assistInstance.Contract(instanciaSplitter);
       App.currentAccount();
-
-      App.updateTxStatus();
+      App.updateBalanceContract();
+      App.updateLogSend();
+      App.updateLogSplit();
+      App.updateLogWithdraw();
     })
     return App.bindEvents();
   },
 
   currentAccount: function () {
-    callback();
-    //web3.currentProvider.publicConfigStore.on('update', callback);
     var account = web3.eth.accounts[0];
+    document.getElementById("aliceAddress").innerHTML = account;
+    App.updateBalanceAlice();
     var accountInterval = setInterval(function () {
       if (web3.eth.accounts[0] !== account) {
         account = web3.eth.accounts[0];
-        callback();
+        document.getElementById("aliceAddress").innerHTML = account;
+        App.updateBalanceAlice();
       }
     }, 100);
-
-    function callback() {
-      var userAccount = web3.eth.accounts[0];
-      web3.eth.getBalance(userAccount, function (err, result) {
-        if (err) {
-          console.log(err)
-        } else {
-          document.getElementById("aliceAddress").innerHTML = userAccount;
-          document.getElementById("aliceBalance").innerHTML = result + " WEI";
-          document.getElementById("aliceBalanceEth").innerHTML = web3.fromWei(result, "ether") + " ETH";
-        }
-      })
-    }
   },
 
   bindEvents: function () {
     $(document).on('click', '#splitAmount', App.splitAmount);
+    $(document).on('click', '#sendAmount', App.sendAmount);
+    $(document).on('click', '#withdraw', App.withdraw);
   },
 
   sendAmount: function () {
     $(".spinnerCube").empty();
     $("#txStatusUp").empty();
-    if ($('#amount').val() == "") {
+    if ($('#amountSend').val() == "") {
       showAlert(txStatusUp, 'Fill in the Amount field');
     } else {
       cubeSpinner('#txStatusUp');
       var account = web3.eth.accounts[0];
-      var amount = $('#amount').val();
-      var amountEth = web3.fromWei(amount, "ether") + " ETH";
+      var amount = $('#amountSend').val();
+      var amountEth = App.weiToEth(amount);
       App.decoredSplitter.sendAmount({
           from: account,
           value: amount
@@ -92,9 +84,9 @@ App = {
           await App.minedTransaction().then(function (response) {
             if (response == true) {
               $(".spinnerCube").empty();
-              App.currentAccount();
               App.updateBalanceAlice();
-              showSuccess(txStatusUp, "Congratulations, you just made a deposit to your account for the value of: " + amountEth, 10)
+              App.updateBalanceContract();
+              showSuccess(txStatusUp, "Congratulations, you just made a deposit to your account for the value of: " + amountEth, 100)
             }
           }) // wait till the promise resolves (*)
         }).catch(function (err) {
@@ -108,58 +100,76 @@ App = {
   withdraw: function () {
     $(".spinnerCube").empty();
     $("#txStatusUp").empty();
-    if ($('#amount').val() == "") {
+    if ($('#amountWithdraw').val() == "") {
       showAlert(txStatusUp, 'Fill in the Amount field');
     } else {
       cubeSpinner('#txStatusUp');
       var account = web3.eth.accounts[0];
-      var amount = $('#amount').val();
-      var amountEth = web3.fromWei(amount, "ether") + " ETH";
-      App.decoredSplitter.withdraw(amount, {
-          from: account
-        })
-        .then(async function () {
-          await App.minedTransaction().then(function (response) {
-            if (response == true) {
+      var amount = $('#amountWithdraw').val();
+      var amountEth = App.weiToEth(amount);
+      var SplitterInstance;
+      App.contracts.Splitter.deployed().then(function (instance) {
+        SplitterInstance = instance;
+        return SplitterInstance.enoughBalance(amount)
+      }).then(function (result) {
+        if (result == true) {
+          App.decoredSplitter.withdraw(amount, {
+              from: account
+            })
+            .then(async function () {
+              await App.minedTransaction().then(function (response) {
+                if (response == true) {
+                  $(".spinnerCube").empty();
+                  App.updateBalanceAlice();
+                  App.updateBalanceContract();
+                  showSuccess(txStatusUp, "You just made a withdraw from your account for the value of: " + amountEth, 100)
+                }
+              }) // wait till the promise resolves (*)
+            }).catch(function (err) {
               $(".spinnerCube").empty();
-              App.currentAccount();
-              App.updateBalanceAlice();
-              showSuccess(txStatusUp, "You just made a withdraw from your account for the value of: " + amountEth, 10)
-            }
-          }) // wait till the promise resolves (*)
-        }).catch(function (err) {
+              console.log(err.message);
+              showAlert(txStatusUp, 'Transaction rejected: ' + err.message);
+            });
+        } else {
           $(".spinnerCube").empty();
-          console.log(err.message);
-          showAlert(txStatusUp, 'Transaction rejected: ' + err.message);
-        });
+          showAlert(txStatusUp, 'Transaction rejected: User has insufficient balance to complete transaction');
+        }
+      }).catch(function (err) {
+        console.log(err.message);
+      });
     }
   },
 
   splitAmount: function () {
     $(".spinnerCube").empty();
     $("#txStatusUp").empty();
-    if (($('#amount').val() == "") || ($('#bobAddress').val() == "") || ($('#carolAddress').val() == "")) {
+    if (($('#amountSplit').val() == "") || ($('#bobAddress').val() == "") || ($('#carolAddress').val() == "")) {
       showAlert(txStatusUp, 'Fill in all fields');
     } else {
       var account = web3.eth.accounts[0];
-      var amount = $('#amount').val();
-      var amountEth = web3.fromWei(amount, "ether") + " ETH";
+      var amount = $('#amountSplit').val();
+      var amountEth = App.weiToEth(amount);
       var bobAddress = $('#bobAddress').val();
       var carolAddress = $('#carolAddress').val();
       cubeSpinner('#txStatusUp');
-      App.decoredSplitter.split(bobAddress, carolAddress, {
-          from: account,
-          value: amount
-        })
-        .then(async function () {
-          await App.minedTransaction().then(function (response) {
-            if (response == true) {
-              $(".spinnerCube").empty();
-              App.currentAccount();
-              App.updateBalanceAlice();
-              App.updateBalanceBob();
-              App.updateBalanceCarol();
-              $("#txStatusUp").append(`
+
+      var SplitterInstance;
+      App.contracts.Splitter.deployed().then(function (instance) {
+        SplitterInstance = instance;
+        return SplitterInstance.enoughBalance(amount)
+      }).then(function (result) {
+        if (result == true) {
+          App.decoredSplitter.split(amount, bobAddress, carolAddress, {
+              from: account
+            })
+            .then(async function () {
+              await App.minedTransaction().then(function (response) {
+                if (response == true) {
+                  $(".spinnerCube").empty();
+                  App.updateBalanceAlice();
+                  App.updateBalanceBob();
+                  App.updateBalanceCarol();
+                  $("#txStatusUp").append(`
               <table style=" width:100%; font-size: 11px;" id="tableTxs" class="scene_element fadeInDownB table bordered table-light table-hover table-striped table-bordered rounded">
                 <tr>
                   <th class="text-center">Amount</th> 
@@ -174,30 +184,82 @@ App = {
                   <td class="p-1 text-center tdLogs">${carolAddress}</td>
                 </tr>
               </table>`);
-            }
-          }) // wait till the promise resolves (*)
-        }).catch(function (err) {
+                }
+              }) // wait till the promise resolves (*)
+            }).catch(function (err) {
+              $(".spinnerCube").empty();
+              console.log(err.message);
+              showAlert(txStatusUp, 'Transaction rejected: ' + err.message);
+            });
+        } else {
           $(".spinnerCube").empty();
-          console.log(err.message);
-          showAlert(txStatusUp, 'Transaction rejected: ' + err.message);
-        });
+          showAlert(txStatusUp, 'Transaction rejected: User has insufficient balance to complete transaction');
+        }
+      }).catch(function (err) {
+        console.log(err.message);
+      });
     }
   },
 
-  updateTxStatus: function () {
+  updateLogSend: function () {
     $("#txStatusUp").empty();
-    $("#txStatus").empty();
+    $("#logSend").empty();
+    var eventBlocks = new Set();
     var cont = 1;
     var SplitterInstance;
     App.contracts.Splitter.deployed().then(function (instance) {
       SplitterInstance = instance;
-      var eventoMostrar = SplitterInstance.LogSplit({}, {
+      var eventSend = SplitterInstance.LogSendAmount({}, {
         fromBlock: 0,
         toBlock: "latest"
       })
 
-      $("#txStatus").append(`
-        <table style=" width:100%; font-size: 11px;" id="tableLogs" class="scene_element fadeInDownB table bordered table-light table-hover table-striped table-bordered rounded">
+      $("#logSend").append(`
+        <table style=" width:100%; font-size: 11px;" id="tableLogSend" class="scene_element scene_element--fadeindown table bordered table-light table-hover table-striped table-bordered rounded">
+          <tr>
+            <th class="text-center">#</th> 
+            <th class="text-center">Amount</th> 
+            <th class="text-center">Account</th>
+          </tr>
+          <div id="tbody"></div>
+        </table>`);
+      eventSend.watch(function (error, result) {
+        if (!error) {
+          let blockNumber = result.blockNumber;
+          if (eventBlocks.has(blockNumber)) return;
+          eventBlocks.add(blockNumber);
+          var datosEvento = result.args;
+          var amount = datosEvento.value;
+          var amountEth = web3.fromWei(amount, "ether") + " ETH";
+          var alice = datosEvento.alice;
+          $("#tableLogSend tbody").after(`           
+            <tr class="table table-light table-hover table-striped table-bordered rounded">
+              <td class="p-1 text-center tdLogs">${cont}</td>   
+              <td class="p-1 text-center tdLogs" title="${amount} WEI">${amountEth}</td>
+              <td class="p-1 text-center tdLogs">${alice}</td>
+            </tr>               
+          `);
+          cont++;
+        }
+      });
+    })
+  },
+
+  updateLogSplit: function () {
+    $("#txStatusUp").empty();
+    $("#logSplit").empty();
+    var eventBlocks = new Set();
+    var cont = 1;
+    var SplitterInstance;
+    App.contracts.Splitter.deployed().then(function (instance) {
+      SplitterInstance = instance;
+      var eventSplit = SplitterInstance.LogSplit({}, {
+        fromBlock: 0,
+        toBlock: "latest"
+      })
+
+      $("#logSplit").append(`
+        <table style=" width:100%; font-size: 11px;" id="tableLogSplit" class="scene_element scene_element--fadeindown table bordered table-light table-hover table-striped table-bordered rounded">
           <tr>
             <th class="text-center">#</th> 
             <th class="text-center">Amount</th> 
@@ -207,15 +269,18 @@ App = {
           </tr>
           <div id="tbody"></div>
         </table>`);
-      eventoMostrar.watch(function (error, result) {
+      eventSplit.watch(function (error, result) {
         if (!error) {
+          let blockNumber = result.blockNumber;
+          if (eventBlocks.has(blockNumber)) return;
+          eventBlocks.add(blockNumber);
           var datosEvento = result.args;
           var amount = datosEvento.value;
           var amountEth = web3.fromWei(amount, "ether") + " ETH";
           var alice = datosEvento.alice;
           var bob = datosEvento.bob;
           var carol = datosEvento.carol;
-          $("#tableLogs tbody").after(`           
+          $("#tableLogSplit tbody").after(`           
             <tr class="table table-light table-hover table-striped table-bordered rounded">
               <td class="p-1 text-center tdLogs">${cont}</td>   
               <td class="p-1 text-center tdLogs" title="${amount} WEI">${amountEth}</td>
@@ -230,33 +295,109 @@ App = {
     })
   },
 
+  updateLogWithdraw: function () {
+    $("#txStatusUp").empty();
+    $("#logWithdraw").empty();
+    var eventBlocks = new Set();
+    var cont = 1;
+    var SplitterInstance;
+    App.contracts.Splitter.deployed().then(function (instance) {
+      SplitterInstance = instance;
+      var eventWithdraw = SplitterInstance.LogWithdraw({}, {
+        fromBlock: 0,
+        toBlock: "latest"
+      })
+
+      $("#logWithdraw").append(`
+        <table style=" width:100%; font-size: 11px;" id="tableLogWithdraw" class="scene_element scene_element--fadeindown table bordered table-light table-hover table-striped table-bordered rounded">
+          <tr>
+            <th class="text-center">#</th> 
+            <th class="text-center">Amount</th> 
+            <th class="text-center">Account</th>
+          </tr>
+          <div id="tbody"></div>
+        </table>`);
+      eventWithdraw.watch(function (error, result) {
+        if (!error) {
+          let blockNumber = result.blockNumber;
+          if (eventBlocks.has(blockNumber)) return;
+          eventBlocks.add(blockNumber);
+          var datosEvento = result.args;
+          var amount = datosEvento.value;
+          var amountEth = web3.fromWei(amount, "ether") + " ETH";
+          var account = datosEvento.account;
+          $("#tableLogWithdraw tbody").after(`           
+            <tr class="table table-light table-hover table-striped table-bordered rounded">
+              <td class="p-1 text-center tdLogs">${cont}</td>   
+              <td class="p-1 text-center tdLogs" title="${amount} WEI">${amountEth}</td>
+              <td class="p-1 text-center tdLogs">${account}</td>
+            </tr>               
+          `);
+          cont++;
+        }
+      });
+    })
+  },
+
+  updateBalanceContract: function () {
+    var SplitterInstance;
+    App.contracts.Splitter.deployed().then(function (instance) {
+      SplitterInstance = instance;
+
+      var contractAddress = SplitterInstance.address;
+      console.log(contractAddress);
+      web3.eth.getBalance(contractAddress, function (err, result) {
+        document.getElementById("amountContract").innerHTML = "Contract Balance " + web3.fromWei(result, "ether") + " ETH";
+      })
+    }).catch(function (err) {
+      console.log(err.message);
+    });
+  },
+
   updateBalanceAlice: function () {
     var aliceAddress = web3.eth.accounts[0];
-    web3.eth.getBalance(aliceAddress, function (err, result) {
+    var SplitterInstance;
+    App.contracts.Splitter.deployed().then(function (instance) {
+      SplitterInstance = instance;
+      return SplitterInstance.getBalance(aliceAddress)
+    }).then(function (result) {
       document.getElementById("aliceBalance").innerHTML = result + " WEI";
-      document.getElementById("aliceBalanceEth").innerHTML = web3.fromWei(result, "ether") + " ETH";
-    })
+      document.getElementById("aliceBalanceEth").innerHTML = App.weiToEth(result);
+    }).catch(function (err) {
+      console.log(err.message);
+    });
   },
 
   updateBalanceBob: function () {
     var bobAddress = $('#bobAddress').val();
-    web3.eth.getBalance(bobAddress, function (err, result) {
+    var SplitterInstance;
+    App.contracts.Splitter.deployed().then(function (instance) {
+      SplitterInstance = instance;
+      return SplitterInstance.getBalance(bobAddress)
+    }).then(function (result) {
       document.getElementById("bobBalance").innerHTML = result + " WEI";
-      document.getElementById("bobBalanceEth").innerHTML = web3.fromWei(result, "ether") + " ETH";
-    })
+      document.getElementById("bobBalanceEth").innerHTML = App.weiToEth(result);
+    }).catch(function (err) {
+      console.log(err.message);
+    });
   },
 
   updateBalanceCarol: function () {
     var carolAddress = $('#carolAddress').val()
-    web3.eth.getBalance(carolAddress, function (err, result) {
+    var SplitterInstance;
+    App.contracts.Splitter.deployed().then(function (instance) {
+      SplitterInstance = instance;
+      return SplitterInstance.getBalance(carolAddress)
+    }).then(function (result) {
       document.getElementById("carolBalance").innerHTML = result + " WEI";
-      document.getElementById("carolBalanceEth").innerHTML = web3.fromWei(result, "ether") + " ETH";
-    })
+      document.getElementById("carolBalanceEth").innerHTML = App.weiToEth(result);
+    }).catch(function (err) {
+      console.log(err.message);
+    });
   },
 
-  changeAmount: function () {
-    var amount = $('#amount').val();
-    document.getElementById("amountEth").innerHTML = web3.fromWei(amount, "ether") + " ETH";
+  weiToEth: function (amount) {
+    return web3.fromWei(amount, "ether") + " ETH";
   },
 
   minedTransaction: async function () {

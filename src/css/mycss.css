@@ -20,16 +20,16 @@ hr {
   overflow: auto;
 }
 
-#txStatus {
+#logSend,
+#logSplit,
+#logWithdraw {
   transition: .8s ease;
   z-index: 2;
-  /* margin-top: 1.4px; */
-  max-height: 43vh;
+  max-height: 37vh;
+  margin: auto;
+  padding: 0;
   overflow: auto;
-  margin-top: -6px;
-  /* margin: 0 auto; */
 }
-
 
 #inputScreen {
   background-color: white;
@@ -44,7 +44,6 @@ hr {
   position: relative;
   background-color: white;
   min-height: 88vh;
-  /* border: 4px outset #343a40; */
   box-sizing: border-box;
   transition: .0s ease-in-out;
   background-color: rgba(255, 255, 255, 0.95);
@@ -343,4 +342,13 @@ div::-webkit-scrollbar-thumb {
 
 iframe {
   z-index: 1080 !important;
+}
+
+.nav-link {
+  color: #343a40;
+}
+
+.nav-tabs>a.active {
+  background-color: #343a40 !important;
+  color: #ffffff !important;
 }

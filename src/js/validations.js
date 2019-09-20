@@ -95,13 +95,26 @@ function validate(classToValidate, event) {
   })
 }
 
-function validateBigAmount() {
-  var field = $('#amount').val();
-  var isEven = bigInt(field).isEven();
-  if (isEven == true) {
-    document.getElementById('amount').setCustomValidity('');
+(function () {
+  'use strict';
+  document.getElementById('sendAmount').addEventListener('click', function (event) {
+    validate('sendClass', event)
+  });
+  document.getElementById('splitAmount').addEventListener('click', function (event) {
+    validate('splitClass', event)
+  });
+  document.getElementById('withdraw').addEventListener('click', function (event) {
+    validate('withdrawClass', event)
+  });
+})();
+
+function validateBigAmount(field) {
+  var value = document.getElementById(field).value;
+  var isValidated = bigInt(value).greater(1);
+  if (isValidated == true) {
+    document.getElementById(field).setCustomValidity('');
   } else {
-    document.getElementById('amount').setCustomValidity('Must be even', (event) => {
+    document.getElementById(field).setCustomValidity('Must be greater than 2', (event) => {
       event.preventDefault();
     });
   }
@@ -109,7 +122,7 @@ function validateBigAmount() {
 
 
 function showAlert(field, message) {
-  $(field).append(`<div id="alertWarning" style="overflow-wrap: break-word;" class="scene_element fadeInDown col-12 text-center"><div class="alert alert-danger alert-dismissible fade show" role="alert">
+  $(field).append(`<div id="alertWarning" style="overflow-wrap: break-word; padding:0" class="scene_element fadeInDown col-12 text-center"><div class="alert alert-danger alert-dismissible fade show" role="alert">
     <strong>${message}
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
@@ -134,7 +147,7 @@ function showSuccess(field, message, time) {
     _time = time * 1000;
   }
   $(field).append(`
-  <div id="successAlert" class="scene_element fadeInDown col-12 text-center">
+  <div id="successAlert" class="scene_element fadeInDown col-12 text-center" style="padding:0">
     <div class="alert alert-success alert-dismissible fade show" role="alert">
       <strong>${message}
       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -183,16 +196,3 @@ function cubeSpinner(field) {
         </div>
       `);
 }
-
-(function () {
-  'use strict';
-  document.getElementById('splitAmount').addEventListener('click', function (event) {
-    validate('splitClass', event)
-  });
-})();
-
-//   (function() {
-//     var accountInterval = setInterval(function() {
-//         App.updateBalances();
-//       }, 1000);
-//   })();

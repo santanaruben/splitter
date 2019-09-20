@@ -1,4 +1,4 @@
-pragma solidity ^0.5.2;
+pragma solidity ^0.5.8;
 
 import "./SafeMath.sol";
 
@@ -23,14 +23,14 @@ contract Splitter {
 
     function withdraw(uint amount) public {
         require(tx.origin == msg.sender);
-        require(balances[msg.sender] >= amount, "Not enough money to withdraw");
+        require(enoughBalance(amount), "Not enough money to withdraw");
         balances[msg.sender] = balances[msg.sender].sub(amount);
         msg.sender.transfer(amount);
         emit LogWithdraw(amount, msg.sender);
     }
 
     function split(uint value, address payable bob, address payable carol) public {
-        require(balances[msg.sender] >= value, "Not enough money to split");
+        require(enoughBalance(value), "Not enough money to split");
         require((value > 1), "Value must be greater than 1");
         if (value.mod(2) == 0) {
             balances[msg.sender] = balances[msg.sender].sub(value);
@@ -42,5 +42,12 @@ contract Splitter {
         balances[bob] = balances[bob].add(valueSplited);
         balances[carol] = balances[carol].add(valueSplited);
         emit LogSplit(value, msg.sender, bob, carol);
+    }
+
+    function enoughBalance(uint value) public view returns(bool) {
+        if (balances[msg.sender] >= value)
+            return true;
+        else
+            return false;
     }
 }

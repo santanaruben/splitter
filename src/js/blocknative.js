@@ -65,8 +65,8 @@ assistInstance.onboard()
 
 const style = {
   darkMode: true,
-  notificationsPosition: 'topRight',
-  css: `.bn-notifications-scroll {margin-top: 220px;}`,
+  //notificationsPosition: 'topRight',
+  css: `.bn-notifications-scroll {margin-bottom: 100px;}`,
 }
 assistInstance.updateStyle(style)
 
