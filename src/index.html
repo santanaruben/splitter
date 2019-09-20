@@ -17,7 +17,18 @@
 	<nav class="navbar navbar-dark bg-dark">
 		<span class="navbar-brand mb-0 ml-4 h1">Splitter Project</span>
 		<span class="navbar-brand mb-0 mr-4 h1" id="amountContract"></span>
-			
+		<span><span id="activity"></span>
+			<div class="btn-group" id="buttonAdmin" style="display:none">
+				<button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown"
+					aria-haspopup="true" aria-expanded="false">
+					Admin
+				</button>
+				<div class="dropdown-menu dropdown-menu-right" id="adminButtons">
+				</div>
+			</div>
+		</span>
+
+
 	</nav>
 
 	<div class="container-fluid mt-2">
@@ -42,18 +53,22 @@
 								<div class="col-1" style="font-size: 25px">
 									=
 								</div>
-								<div id="aliceBalanceEth" class="col-4 col-form-label text-right" title="This is your balance in ETH">
+								<div id="aliceBalanceEth" class="col-4 col-form-label text-right"
+									title="This is your balance in ETH">
 								</div>
 							</div>
 
 							<nav class="nav-pills nav-fill">
 								<div class="nav nav-tabs" id="nav-tab-principal" role="tablist">
-									<a class="nav-item nav-link active" id="nav-sendAmount-tab" data-toggle="tab" href="#nav-sendAmount"
-										role="tab" aria-controls="nav-sendAmount" aria-selected="true">Send</a>
-									<a class="nav-item nav-link" id="nav-splitAmount-tab" data-toggle="tab" href="#nav-splitAmount"
-										role="tab" aria-controls="nav-splitAmount" aria-selected="false">Split</a>
-									<a class="nav-item nav-link" id="nav-withdrawAmount-tab" data-toggle="tab" href="#nav-withdrawAmount"
-										role="tab" aria-controls="nav-withdrawAmount" aria-selected="false">Withdraw</a>
+									<a class="nav-item nav-link active" id="nav-sendAmount-tab" data-toggle="tab"
+										href="#nav-sendAmount" role="tab" aria-controls="nav-sendAmount"
+										aria-selected="true">Send</a>
+									<a class="nav-item nav-link" id="nav-splitAmount-tab" data-toggle="tab"
+										href="#nav-splitAmount" role="tab" aria-controls="nav-splitAmount"
+										aria-selected="false">Split</a>
+									<a class="nav-item nav-link" id="nav-withdrawAmount-tab" data-toggle="tab"
+										href="#nav-withdrawAmount" role="tab" aria-controls="nav-withdrawAmount"
+										aria-selected="false">Withdraw</a>
 								</div>
 							</nav>
 							<div class="tab-content" id="nav-tabContent-principal">
@@ -62,14 +77,16 @@
 
 									<form class="mt-4" novalidate>
 										<div class="form-row">
-											<label style="cursor: pointer" for="amount" class="col-2 col-form-label mb-4">
+											<label style="cursor: pointer" for="amount"
+												class="col-2 col-form-label mb-4">
 												WEI Amount
 											</label>
 											<div class="col-5 sendClass">
 												<input type="number" min="2" class="form-control" id="amountSend"
 													onkeypress="return numbersOnly(event)"
 													onkeyup="document.getElementById('amountSendEth').innerHTML = App.weiToEth(amountSend.value); validateBigAmount('amountSend')"
-													placeholder="Amount (in WEI) you want to send" pattern="[(0-9)]{1,18}" autofocus required>
+													placeholder="Amount (in WEI) you want to send"
+													pattern="[(0-9)]{1,18}" autofocus required>
 												<div class="valid-feedback">
 													Looks good!
 												</div>
@@ -91,18 +108,21 @@
 									</div>
 
 								</div>
-								<div class="tab-pane fade" id="nav-splitAmount" role="tabpanel" aria-labelledby="nav-splitAmount-tab">
+								<div class="tab-pane fade" id="nav-splitAmount" role="tabpanel"
+									aria-labelledby="nav-splitAmount-tab">
 
 									<form class="mt-4" novalidate>
 										<div class="form-row">
-											<label style="cursor: pointer" for="amount" class="col-2 col-form-label mb-4">
+											<label style="cursor: pointer" for="amount"
+												class="col-2 col-form-label mb-4">
 												WEI Amount
 											</label>
 											<div class="col-5 splitClass">
 												<input type="number" min="2" class="form-control" id="amountSplit"
 													onkeypress="return numbersOnly(event)"
 													onkeyup="document.getElementById('amountSplitEth').innerHTML = App.weiToEth(amountSplit.value); validateBigAmount('amountSplit')"
-													placeholder="Amount (in WEI) you want to split" pattern="[(0-9)]{1,18}" autofocus required>
+													placeholder="Amount (in WEI) you want to split"
+													pattern="[(0-9)]{1,18}" autofocus required>
 												<div class="valid-feedback">
 													Looks good!
 												</div>
@@ -115,13 +135,15 @@
 												title="This is the amount (in ETH) you want to split">
 											</div>
 
-											<label style="cursor: pointer" for="bobAddress" class="col-2 col-form-label mb-4">
+											<label style="cursor: pointer" for="bobAddress"
+												class="col-2 col-form-label mb-4">
 												Bob address
 											</label>
 											<div class="col-10 splitClass">
-												<input type="text" class="form-control" id="bobAddress" onkeypress="return hexOnly(event)"
-													onchange="App.updateBalanceBob()" onkeyup="App.updateBalanceBob()"
-													placeholder="Bob account here" pattern="[(A-f),(0-9),(x)]{42}" required>
+												<input type="text" class="form-control" id="bobAddress"
+													onkeypress="return hexOnly(event)" onchange="App.updateBalanceBob()"
+													onkeyup="App.updateBalanceBob()" placeholder="Bob account here"
+													pattern="[(A-f),(0-9),(x)]{42}" required>
 												<div class="valid-feedback">
 													I wish I was Bob!
 												</div>
@@ -129,22 +151,27 @@
 													Must be a valid ethereum address!
 												</div>
 											</div>
-											<label style="cursor: pointer" for="bobBalance" class="col-2 col-form-label mb-4">
+											<label style="cursor: pointer" for="bobBalance"
+												class="col-2 col-form-label mb-4">
 												Bob balance
 											</label>
-											<div id="bobBalance" class="col-5 col-form-label" title="This is Bob balance">
+											<div id="bobBalance" class="col-5 col-form-label"
+												title="This is Bob balance">
 											</div>
 											<div class="col-1" style="font-size: 25px">=</div>
 											<div id="bobBalanceEth" class="col-4 col-form-label text-right"
 												title="This is Bob balance in Eth">
 											</div>
-											<label style="cursor: pointer" for="carolAddress" class="col-2 col-form-label mb-4">
+											<label style="cursor: pointer" for="carolAddress"
+												class="col-2 col-form-label mb-4">
 												Carol address
 											</label>
 											<div class="col-10 splitClass">
-												<input type="text" class="form-control" id="carolAddress" onkeypress="return hexOnly(event)"
-													onchange="App.updateBalanceCarol()" onkeyup="App.updateBalanceCarol()"
-													placeholder="Carol account here" pattern="[(A-f),(0-9),(x)]{42}" required>
+												<input type="text" class="form-control" id="carolAddress"
+													onkeypress="return hexOnly(event)"
+													onchange="App.updateBalanceCarol()"
+													onkeyup="App.updateBalanceCarol()" placeholder="Carol account here"
+													pattern="[(A-f),(0-9),(x)]{42}" required>
 												<div class="valid-feedback">
 													Carol will clap with her ears for so much happiness!
 												</div>
@@ -152,10 +179,12 @@
 													Must be a valid ethereum address!
 												</div>
 											</div>
-											<label style="cursor: pointer" for="carolBalance" class="col-2 col-form-label mb-4">
+											<label style="cursor: pointer" for="carolBalance"
+												class="col-2 col-form-label mb-4">
 												Carol balance
 											</label>
-											<div id="carolBalance" class="col-5 col-form-label" title="This is Carol balance">
+											<div id="carolBalance" class="col-5 col-form-label"
+												title="This is Carol balance">
 											</div>
 											<div class="col-1" style="font-size: 25px">=</div>
 											<div id="carolBalanceEth" class="col-4 col-form-label text-right"
@@ -176,14 +205,16 @@
 
 									<form class="mt-4" novalidate>
 										<div class="form-row">
-											<label style="cursor: pointer" for="amount" class="col-2 col-form-label mb-4">
+											<label style="cursor: pointer" for="amount"
+												class="col-2 col-form-label mb-4">
 												WEI Amount
 											</label>
 											<div class="col-5 withdrawClass">
 												<input type="number" min="2" class="form-control" id="amountWithdraw"
 													onkeypress="return numbersOnly(event)"
 													onkeyup="document.getElementById('amountWithdrawEth').innerHTML = App.weiToEth(amountWithdraw.value); validateBigAmount('amountWithdraw')"
-													placeholder="Amount (in WEI) you want to withdraw" pattern="[(0-9)]{1,18}" autofocus required>
+													placeholder="Amount (in WEI) you want to withdraw"
+													pattern="[(0-9)]{1,18}" autofocus required>
 												<div class="valid-feedback">
 													Looks good!
 												</div>
@@ -215,7 +246,7 @@
 
 			<div class="col col-md-4" id="outputScreen">
 				<h5 class=" text-center ribbon4 scene_element scene_element--fadeinright">Current Transaction</h5>
-				<div id="txStatusUp" style="min-height: 30vh;"></div>
+				<div id="txStatusUp" style="min-height: 26vh;"></div>
 				<h5 class=" text-center ribbon4 scene_element scene_element--fadeinright">Logs</h5>
 				<!--<hr> class="container-fluid"-->
 				<div>
@@ -225,27 +256,51 @@
 
 								<nav class="nav-fill">
 									<div class="nav nav-tabs" id="nav-tab" role="tablist">
-										<a class="nav-item nav-link active" id="nav-send-tab" data-toggle="tab" href="#nav-send" role="tab"
-											aria-controls="nav-send" aria-selected="true">Send</a>
-										<a class="nav-item nav-link" id="nav-split-tab" data-toggle="tab" href="#nav-split" role="tab"
-											aria-controls="nav-split" aria-selected="false">Split</a>
-										<a class="nav-item nav-link" id="nav-withdraw-tab" data-toggle="tab" href="#nav-withdraw" role="tab"
-											aria-controls="nav-withdraw" aria-selected="false">Withdraw</a>
+										<a class="nav-item nav-link active" id="nav-send-tab" data-toggle="tab"
+											href="#nav-send" role="tab" aria-controls="nav-send"
+											aria-selected="true">Send</a>
+										<a class="nav-item nav-link" id="nav-split-tab" data-toggle="tab"
+											href="#nav-split" role="tab" aria-controls="nav-split"
+											aria-selected="false">Split</a>
+										<a class="nav-item nav-link" id="nav-withdraw-tab" data-toggle="tab"
+											href="#nav-withdraw" role="tab" aria-controls="nav-withdraw"
+											aria-selected="false">Withdraw</a>
+										<a class="nav-item nav-link" id="nav-emergencyWithdraw-tab" data-toggle="tab"
+											href="#nav-emergencyWithdraw" role="tab" aria-controls="nav-emergencyWithdraw"
+											aria-selected="false">Emergency Withdraw</a>
+										<a class="nav-item nav-link" id="nav-refund-tab" data-toggle="tab"
+											href="#nav-refund" role="tab" aria-controls="nav-refund"
+											aria-selected="false">Refund</a>
 									</div>
 								</nav>
 								<div class="tab-content" id="nav-tabContent">
-									<div class="tab-pane fade show active" id="nav-send" role="tabpanel" aria-labelledby="nav-send-tab">
+									<div class="tab-pane fade show active" id="nav-send" role="tabpanel"
+										aria-labelledby="nav-send-tab">
 										<div id="logSend" class="col">
 
 										</div>
 									</div>
-									<div class="tab-pane fade" id="nav-split" role="tabpanel" aria-labelledby="nav-split-tab">
+									<div class="tab-pane fade" id="nav-split" role="tabpanel"
+										aria-labelledby="nav-split-tab">
 										<div id="logSplit" class="col">
 
 										</div>
 									</div>
-									<div class="tab-pane fade" id="nav-withdraw" role="tabpanel" aria-labelledby="nav-withdraw-tab">
+									<div class="tab-pane fade" id="nav-withdraw" role="tabpanel"
+										aria-labelledby="nav-withdraw-tab">
 										<div id="logWithdraw" class="col">
+
+										</div>
+									</div>
+									<div class="tab-pane fade" id="nav-emergencyWithdraw" role="tabpanel"
+										aria-labelledby="nav-emergencyWithdraw-tab">
+										<div id="logEmergencyWithdraw" class="col">
+
+										</div>
+									</div>
+									<div class="tab-pane fade" id="nav-refund" role="tabpanel"
+										aria-labelledby="nav-refund-tab">
+										<div id="logRefund" class="col">
 
 										</div>
 									</div>

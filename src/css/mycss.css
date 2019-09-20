@@ -22,10 +22,12 @@ hr {
 
 #logSend,
 #logSplit,
-#logWithdraw {
+#logWithdraw,
+#logEmergencyWithdraw,
+#logRefund {
   transition: .8s ease;
   z-index: 2;
-  max-height: 37vh;
+  max-height: 34vh;
   margin: auto;
   padding: 0;
   overflow: auto;

@@ -1,12 +1,16 @@
 pragma solidity ^0.5.8;
 
-import "./SafeMath.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 
-contract Splitter {
+contract Splitter is Ownable, Pausable {
 
     event LogSplit(uint value, address indexed alice, address indexed bob, address indexed carol);
     event LogSendAmount(uint value, address indexed alice);
     event LogWithdraw(uint value, address indexed account);
+    event LogEmergencyWithdraw(uint value, address indexed account);
+    event LogRefund(uint value, address indexed account);
 
     using SafeMath for uint256;
     
@@ -16,12 +20,12 @@ contract Splitter {
         return balances[account];
     }
     
-    function sendAmount() public payable {
+    function sendAmount() public payable whenNotPaused {
         balances[msg.sender] = balances[msg.sender].add(msg.value);
         emit LogSendAmount(msg.value, msg.sender);
     }
 
-    function withdraw(uint amount) public {
+    function withdraw(uint amount) public whenNotPaused {
         require(tx.origin == msg.sender);
         require(enoughBalance(amount), "Not enough money to withdraw");
         balances[msg.sender] = balances[msg.sender].sub(amount);
@@ -29,7 +33,7 @@ contract Splitter {
         emit LogWithdraw(amount, msg.sender);
     }
 
-    function split(uint value, address payable bob, address payable carol) public {
+    function split(uint value, address payable bob, address payable carol) public whenNotPaused {
         require(enoughBalance(value), "Not enough money to split");
         require((value > 1), "Value must be greater than 1");
         if (value.mod(2) == 0) {
@@ -49,5 +53,16 @@ contract Splitter {
             return true;
         else
             return false;
+    }
+
+    function emergencyWithdraw() public onlyOwner whenPaused {
+        uint amount = address(this).balance;
+        msg.sender.transfer(amount);
+        emit LogEmergencyWithdraw(amount, msg.sender);
+    }
+
+    function refund() public payable onlyOwner whenPaused {
+        uint amount = msg.value;
+        emit LogRefund(amount, msg.sender);
     }
 }

@@ -39,15 +39,19 @@ App = {
       var instanciaSplitter = App.web3Instance.eth.contract(App.SplitterAbi).at(App.SplitterAddress);
       App.decoredSplitter = assistInstance.Contract(instanciaSplitter);
       App.currentAccount();
+      App.checkActivity();
       App.updateBalanceContract();
       App.updateLogSend();
       App.updateLogSplit();
       App.updateLogWithdraw();
+      App.updateLogEmergencyWithdraw();
+      App.updateLogRefund();      
     })
     return App.bindEvents();
   },
 
   currentAccount: function () {
+    App.checkAdmin();
     var account = web3.eth.accounts[0];
     document.getElementById("aliceAddress").innerHTML = account;
     App.updateBalanceAlice();
@@ -56,8 +60,155 @@ App = {
         account = web3.eth.accounts[0];
         document.getElementById("aliceAddress").innerHTML = account;
         App.updateBalanceAlice();
+        App.checkAdmin();
       }
     }, 100);
+  },
+  // <span class="badge badge-pill badge-success">contract active</span>
+
+  checkAdmin: function () {
+    var SplitterInstance;
+    App.contracts.Splitter.deployed().then(function (instance) {
+      SplitterInstance = instance;
+      return SplitterInstance.isOwner()
+    }).then(function (admin) {
+      if (admin == true) {
+        document.getElementById("buttonAdmin").setAttribute("style", "display:true");
+      } else {
+        document.getElementById("buttonAdmin").setAttribute("style", "display:none");
+      }
+    }).catch(function (err) {});
+  },
+
+  checkActivity: function () {
+    var SplitterInstance;
+    App.contracts.Splitter.deployed().then(function (instance) {
+      SplitterInstance = instance;
+      return SplitterInstance.paused()
+    }).then(function (paused) {
+      if (paused == true) {
+        $("#activity").empty();
+        $("#activity").append(`<span class="badge badge-pill badge-danger">contract in pause</span>`);
+        $("#adminButtons").empty();
+        $("#adminButtons").append(`<button class="dropdown-item btn btn-success" type="button" id="unpause" onclick="App.pauseUnpause()">Activate the contract</button>
+        <button class="dropdown-item btn btn-danger" type="button" id="emergencyWithdraw" onclick="App.emergencyWithdraw()">Emergency Withdraw</button>
+        <input type="number" min="2" class="form-control" id="amountFund"
+													onkeypress="return numbersOnly(event)"
+													onkeyup="validateBigAmount('amountFund')"
+													placeholder="Amount (in WEI) you want to send"
+													pattern="[(0-9)]{1,18}"><button class="dropdown-item btn btn-primary" type="button" id="refund" onclick="App.refund()">Refund</button>`);
+        document.getElementById('sendAmount').disabled=true;
+        document.getElementById('splitAmount').disabled=true;
+        document.getElementById('withdraw').disabled=true;
+      } else {
+        $("#activity").empty();
+        $("#activity").append(`<span class="badge badge-pill badge-success">contract active</span>`);
+        $("#adminButtons").empty();
+        $("#adminButtons").append(`<button class="dropdown-item btn btn-danger" type="button" id="pause" onclick="App.pauseUnpause()">Pause the contract</button>`);
+        document.getElementById('sendAmount').disabled=false;
+        document.getElementById('splitAmount').disabled=false;
+        document.getElementById('withdraw').disabled=false;
+      }
+    }).catch(function (err) {});
+  },
+
+  emergencyWithdraw: function () {
+    $(".spinnerCube").empty();
+    $("#txStatusUp").empty();
+    cubeSpinner('#txStatusUp');
+    App.decoredSplitter.emergencyWithdraw()
+    .then(async function () {
+      await App.minedTransaction().then(function (response) {
+        if (response == true) {
+          $(".spinnerCube").empty();
+          showSuccess(txStatusUp, "You just withdrew all the funds from the contract", 100)
+          App.updateBalanceContract();
+          App.updateBalanceAlice();
+        }
+      }) // wait till the promise resolves (*)
+    }).catch(function (err) {
+      $(".spinnerCube").empty();
+      console.log(err.message);
+      showAlert(txStatusUp, 'Transaction rejected: ' + err.message);
+    });
+  },
+
+  refund: function () {
+    $(".spinnerCube").empty();
+    $("#txStatusUp").empty();
+    cubeSpinner('#txStatusUp');
+    if ($("#amountFund").val() < 2){
+      $(".spinnerCube").empty();
+      showAlert(txStatusUp, 'The Refund value must be greater than 1');
+    }
+    else {
+    var amountFund = $("#amountFund").val();
+    var amountFundEth = App.weiToEth(amountFund);
+    App.decoredSplitter.refund( {value: amountFund} )
+    .then(async function () {
+      await App.minedTransaction().then(function (response) {
+        if (response == true) {
+          $(".spinnerCube").empty();
+          showSuccess(txStatusUp, "You just refund the contract for the value of: "+ amountFundEth , 100)
+          App.updateBalanceContract();
+          App.updateBalanceAlice();
+        }
+      }) // wait till the promise resolves (*)
+    }).catch(function (err) {
+      $(".spinnerCube").empty();
+      console.log(err.message);
+      showAlert(txStatusUp, 'Transaction rejected: ' + err.message);
+    });
+  }
+  },
+
+  pauseUnpause: function () {
+    $(".spinnerCube").empty();
+    $("#txStatusUp").empty();
+    cubeSpinner('#txStatusUp');
+    var SplitterInstance;
+    App.contracts.Splitter.deployed().then(function (instance) {
+      SplitterInstance = instance;
+      return SplitterInstance.paused()
+    }).then(function (paused) {
+      if (paused == true) {
+        App.decoredSplitter.unpause()
+        .then(async function () {
+          await App.minedTransaction().then(function (response) {
+            if (response == true) {
+              $(".spinnerCube").empty();
+              showSuccess(txStatusUp, "You just reactivated the contract", 100)
+              App.checkActivity();
+            }
+          }) // wait till the promise resolves (*)
+        }).catch(function (err) {
+          $(".spinnerCube").empty();
+          console.log(err.message);
+          showAlert(txStatusUp, 'Transaction rejected: ' + err.message);
+        });
+      }
+      else {
+        App.decoredSplitter.pause()
+        .then(async function () {
+          await App.minedTransaction().then(function (response) {
+            if (response == true) {
+              $(".spinnerCube").empty();
+              showSuccess(txStatusUp, "You just paused the contract", 100)
+              App.checkActivity();
+            }
+          }) // wait till the promise resolves (*)
+        }).catch(function (err) {
+          $(".spinnerCube").empty();
+          console.log(err.message);
+          showAlert(txStatusUp, 'Transaction rejected: ' + err.message);
+        });
+      }
+
+    }).catch(function (err) {
+      $(".spinnerCube").empty();
+      console.log(err.message);
+      showAlert(txStatusUp, 'Transaction rejected: ' + err.message);
+    });
   },
 
   bindEvents: function () {
@@ -339,13 +490,101 @@ App = {
     })
   },
 
+  updateLogEmergencyWithdraw: function () {
+    $("#txStatusUp").empty();
+    $("#logEmergencyWithdraw").empty();
+    var eventBlocks = new Set();
+    var cont = 1;
+    var SplitterInstance;
+    App.contracts.Splitter.deployed().then(function (instance) {
+      SplitterInstance = instance;
+      var eventEmergencyWithdraw = SplitterInstance.LogEmergencyWithdraw({}, {
+        fromBlock: 0,
+        toBlock: "latest"
+      })
+
+      $("#logEmergencyWithdraw").append(`
+        <table style=" width:100%; font-size: 11px;" id="tableLogEmergencyWithdraw" class="scene_element scene_element--fadeindown table bordered table-light table-hover table-striped table-bordered rounded">
+          <tr>
+            <th class="text-center">#</th> 
+            <th class="text-center">Amount</th> 
+            <th class="text-center">Account</th>
+          </tr>
+          <div id="tbody"></div>
+        </table>`);
+        eventEmergencyWithdraw.watch(function (error, result) {
+        if (!error) {
+          let blockNumber = result.blockNumber;
+          if (eventBlocks.has(blockNumber)) return;
+          eventBlocks.add(blockNumber);
+          var datosEvento = result.args;
+          var amount = datosEvento.value;
+          var amountEth = web3.fromWei(amount, "ether") + " ETH";
+          var account = datosEvento.account;
+          $("#tableLogEmergencyWithdraw tbody").after(`           
+            <tr class="table table-light table-hover table-striped table-bordered rounded">
+              <td class="p-1 text-center tdLogs">${cont}</td>   
+              <td class="p-1 text-center tdLogs" title="${amount} WEI">${amountEth}</td>
+              <td class="p-1 text-center tdLogs">${account}</td>
+            </tr>               
+          `);
+          cont++;
+        }
+      });
+    })
+  },
+
+  updateLogRefund: function () {
+    $("#txStatusUp").empty();
+    $("#logWithdraw").empty();
+    var eventBlocks = new Set();
+    var cont = 1;
+    var SplitterInstance;
+    App.contracts.Splitter.deployed().then(function (instance) {
+      SplitterInstance = instance;
+      var eventLogRefund = SplitterInstance.LogRefund({}, {
+        fromBlock: 0,
+        toBlock: "latest"
+      })
+
+      $("#logRefund").append(`
+        <table style=" width:100%; font-size: 11px;" id="tableLogRefund" class="scene_element scene_element--fadeindown table bordered table-light table-hover table-striped table-bordered rounded">
+          <tr>
+            <th class="text-center">#</th> 
+            <th class="text-center">Amount</th> 
+            <th class="text-center">Account</th>
+          </tr>
+          <div id="tbody"></div>
+        </table>`);
+        eventLogRefund.watch(function (error, result) {
+        if (!error) {
+          console.log(result);
+          let blockNumber = result.blockNumber;
+          if (eventBlocks.has(blockNumber)) return;
+          eventBlocks.add(blockNumber);
+          var datosEvento = result.args;
+          var amount = datosEvento.value;
+          var amountEth = web3.fromWei(amount, "ether") + " ETH";
+          var account = datosEvento.account;
+          $("#tableLogRefund tbody").after(`           
+            <tr class="table table-light table-hover table-striped table-bordered rounded">
+              <td class="p-1 text-center tdLogs">${cont}</td>   
+              <td class="p-1 text-center tdLogs" title="${amount} WEI">${amountEth}</td>
+              <td class="p-1 text-center tdLogs">${account}</td>
+            </tr>               
+          `);
+          cont++;
+        }
+      });
+    })
+  },
+
   updateBalanceContract: function () {
     var SplitterInstance;
     App.contracts.Splitter.deployed().then(function (instance) {
       SplitterInstance = instance;
 
       var contractAddress = SplitterInstance.address;
-      console.log(contractAddress);
       web3.eth.getBalance(contractAddress, function (err, result) {
         document.getElementById("amountContract").innerHTML = "Contract Balance " + web3.fromWei(result, "ether") + " ETH";
       })
