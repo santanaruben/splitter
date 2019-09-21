@@ -97,9 +97,6 @@ function validate(classToValidate, event) {
 
 (function () {
   'use strict';
-  document.getElementById('sendAmount').addEventListener('click', function (event) {
-    validate('sendClass', event)
-  });
   document.getElementById('splitAmount').addEventListener('click', function (event) {
     validate('splitClass', event)
   });

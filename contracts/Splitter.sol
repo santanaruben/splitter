@@ -6,11 +6,10 @@ import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 
 contract Splitter is Ownable, Pausable {
 
-    event LogSplit(uint value, address indexed alice, address indexed bob, address indexed carol);
-    event LogSendAmount(uint value, address indexed alice);
-    event LogWithdraw(uint value, address indexed account);
-    event LogEmergencyWithdraw(uint value, address indexed account);
-    event LogRefund(uint value, address indexed account);
+    event LogSplitted(uint value, address indexed alice, address indexed bob, address indexed carol);
+    event LogWithdrawn(uint value, address indexed account);
+    event LogEmergencyWithdrawn(uint value, address indexed account);
+    event LogRefunded(uint value, address indexed account);
 
     using SafeMath for uint256;
     
@@ -19,33 +18,24 @@ contract Splitter is Ownable, Pausable {
     function getBalance(address account) public view returns (uint) {
         return balances[account];
     }
-    
-    function sendAmount() public payable whenNotPaused {
-        balances[msg.sender] = balances[msg.sender].add(msg.value);
-        emit LogSendAmount(msg.value, msg.sender);
-    }
 
     function withdraw(uint amount) public whenNotPaused {
-        require(tx.origin == msg.sender);
-        require(enoughBalance(amount), "Not enough money to withdraw");
-        balances[msg.sender] = balances[msg.sender].sub(amount);
+        uint balance = balances[msg.sender];
+        require(balance >= amount, "Not enough money to withdraw");
+        balances[msg.sender] = balance.sub(amount);
         msg.sender.transfer(amount);
-        emit LogWithdraw(amount, msg.sender);
+        emit LogWithdrawn(amount, msg.sender);
     }
 
-    function split(uint value, address payable bob, address payable carol) public whenNotPaused {
-        require(enoughBalance(value), "Not enough money to split");
+    function split(address bob, address carol) public payable whenNotPaused {
+        uint value = msg.value;
         require((value > 1), "Value must be greater than 1");
-        if (value.mod(2) == 0) {
-            balances[msg.sender] = balances[msg.sender].sub(value);
-        }
-        else {
-            balances[msg.sender] = balances[msg.sender].sub(value.sub(1));
-        }
+        uint balance = address(msg.sender).balance;
+        require(balance >= value, "Not enough money to split");
         uint valueSplited = value.div(2);
         balances[bob] = balances[bob].add(valueSplited);
-        balances[carol] = balances[carol].add(valueSplited);
-        emit LogSplit(value, msg.sender, bob, carol);
+        balances[carol] = balances[carol].add(value.sub(valueSplited));
+        emit LogSplitted(value, msg.sender, bob, carol);
     }
 
     function enoughBalance(uint value) public view returns(bool) {
@@ -58,11 +48,11 @@ contract Splitter is Ownable, Pausable {
     function emergencyWithdraw() public onlyOwner whenPaused {
         uint amount = address(this).balance;
         msg.sender.transfer(amount);
-        emit LogEmergencyWithdraw(amount, msg.sender);
+        emit LogEmergencyWithdrawn(amount, msg.sender);
     }
 
     function refund() public payable onlyOwner whenPaused {
         uint amount = msg.value;
-        emit LogRefund(amount, msg.sender);
+        emit LogRefunded(amount, msg.sender);
     }
 }

@@ -48,22 +48,19 @@
 								<label for="aliceBalance" class="col-2 col-form-label mb-2">
 									Alice balance
 								</label>
-								<div id="aliceBalance" class="col-5 col-form-label" title="This is your balance in WEI">
+								<div id="aliceBalance" class="col-5 col-form-label" title="This is your balance (in WEI) outside the contract">
 								</div>
 								<div class="col-1" style="font-size: 25px">
 									=
 								</div>
 								<div id="aliceBalanceEth" class="col-4 col-form-label text-right"
-									title="This is your balance in ETH">
+									title="This is your balance (in ETH) outside the contract">
 								</div>
 							</div>
 
 							<nav class="nav-pills nav-fill">
 								<div class="nav nav-tabs" id="nav-tab-principal" role="tablist">
-									<a class="nav-item nav-link active" id="nav-sendAmount-tab" data-toggle="tab"
-										href="#nav-sendAmount" role="tab" aria-controls="nav-sendAmount"
-										aria-selected="true">Send</a>
-									<a class="nav-item nav-link" id="nav-splitAmount-tab" data-toggle="tab"
+									<a class="nav-item nav-link active" id="nav-splitAmount-tab" data-toggle="tab"
 										href="#nav-splitAmount" role="tab" aria-controls="nav-splitAmount"
 										aria-selected="false">Split</a>
 									<a class="nav-item nav-link" id="nav-withdrawAmount-tab" data-toggle="tab"
@@ -72,43 +69,8 @@
 								</div>
 							</nav>
 							<div class="tab-content" id="nav-tabContent-principal">
-								<div class="tab-pane fade show active" id="nav-sendAmount" role="tabpanel"
-									aria-labelledby="nav-sendAmount-tab">
 
-									<form class="mt-4" novalidate>
-										<div class="form-row">
-											<label style="cursor: pointer" for="amount"
-												class="col-2 col-form-label mb-4">
-												WEI Amount
-											</label>
-											<div class="col-5 sendClass">
-												<input type="number" min="2" class="form-control" id="amountSend"
-													onkeypress="return numbersOnly(event)"
-													onkeyup="document.getElementById('amountSendEth').innerHTML = App.weiToEth(amountSend.value); validateBigAmount('amountSend')"
-													placeholder="Amount (in WEI) you want to send"
-													pattern="[(0-9)]{1,18}" autofocus required>
-												<div class="valid-feedback">
-													Looks good!
-												</div>
-												<div class="invalid-feedback">
-													Must be greater than one (don't be greedy!)
-												</div>
-											</div>
-											<div class="col-1" style="font-size: 25px">=</div>
-											<div id="amountSendEth" class="col-4 col-form-label text-right"
-												title="This is the amount (in ETH) you want to send">
-											</div>
-										</div>
-									</form>
-
-									<div class="text-center">
-										<button id="sendAmount" class="btn btn-info" style="margin: 4px;">
-											Send amount
-										</button>
-									</div>
-
-								</div>
-								<div class="tab-pane fade" id="nav-splitAmount" role="tabpanel"
+								<div class="tab-pane fade show active" id="nav-splitAmount" role="tabpanel"
 									aria-labelledby="nav-splitAmount-tab">
 
 									<form class="mt-4" novalidate>
@@ -156,11 +118,11 @@
 												Bob balance
 											</label>
 											<div id="bobBalance" class="col-5 col-form-label"
-												title="This is Bob balance">
+												title="This is the Bob balance (in WEI) inside the contract">
 											</div>
 											<div class="col-1" style="font-size: 25px">=</div>
 											<div id="bobBalanceEth" class="col-4 col-form-label text-right"
-												title="This is Bob balance in Eth">
+												title="This is the Bob balance (in ETH) inside the contract">
 											</div>
 											<label style="cursor: pointer" for="carolAddress"
 												class="col-2 col-form-label mb-4">
@@ -184,11 +146,11 @@
 												Carol balance
 											</label>
 											<div id="carolBalance" class="col-5 col-form-label"
-												title="This is Carol balance">
+												title="This is the Carol balance (in WEI) inside the contract">
 											</div>
 											<div class="col-1" style="font-size: 25px">=</div>
 											<div id="carolBalanceEth" class="col-4 col-form-label text-right"
-												title="This is Carol balance in Eth">
+												title="This is the Carol balance (in Eth) inside the contract">
 											</div>
 										</div>
 									</form>
@@ -205,6 +167,19 @@
 
 									<form class="mt-4" novalidate>
 										<div class="form-row">
+
+												<label for="yourBalance" class="col-2 col-form-label mb-2">
+														Your balance
+													</label>
+													<div id="yourBalance" class="col-5 col-form-label" title="This is your balance (in WEI) inside the contract">
+													</div>
+													<div class="col-1" style="font-size: 25px">
+														=
+													</div>
+													<div id="yourBalanceEth" class="col-4 col-form-label text-right"
+														title="This is your balance (in ETH) inside the contract">
+													</div>
+
 											<label style="cursor: pointer" for="amount"
 												class="col-2 col-form-label mb-4">
 												WEI Amount
@@ -219,7 +194,7 @@
 													Looks good!
 												</div>
 												<div class="invalid-feedback">
-													Must be greater than one (don't be greedy!)
+													Must be greater than one
 												</div>
 											</div>
 											<div class="col-1" style="font-size: 25px">=</div>
@@ -256,10 +231,7 @@
 
 								<nav class="nav-fill">
 									<div class="nav nav-tabs" id="nav-tab" role="tablist">
-										<a class="nav-item nav-link active" id="nav-send-tab" data-toggle="tab"
-											href="#nav-send" role="tab" aria-controls="nav-send"
-											aria-selected="true">Send</a>
-										<a class="nav-item nav-link" id="nav-split-tab" data-toggle="tab"
+										<a class="nav-item nav-link active" id="nav-split-tab" data-toggle="tab"
 											href="#nav-split" role="tab" aria-controls="nav-split"
 											aria-selected="false">Split</a>
 										<a class="nav-item nav-link" id="nav-withdraw-tab" data-toggle="tab"
@@ -274,13 +246,7 @@
 									</div>
 								</nav>
 								<div class="tab-content" id="nav-tabContent">
-									<div class="tab-pane fade show active" id="nav-send" role="tabpanel"
-										aria-labelledby="nav-send-tab">
-										<div id="logSend" class="col">
-
-										</div>
-									</div>
-									<div class="tab-pane fade" id="nav-split" role="tabpanel"
+									<div class="tab-pane fade show active" id="nav-split" role="tabpanel"
 										aria-labelledby="nav-split-tab">
 										<div id="logSplit" class="col">
 
@@ -318,6 +284,7 @@
 		<script src="js/truffle-contract.js" charset="UTF-8"></script>
 		<script src="js/BigInteger.min.js" charset="UTF-8"></script>
 		<script src="js/validations.js" charset="UTF-8"></script>
+		<script src="js/promisify.js" charset="UTF-8"></script>
 		<script src="js/app.js" charset="UTF-8"></script>
 		<script src="js/assist.min.js"></script>
 		<script src="js/blocknative.js"></script>
