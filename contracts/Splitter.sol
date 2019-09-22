@@ -30,8 +30,6 @@ contract Splitter is Ownable, Pausable {
 
     function split(address bob, address carol) public payable whenNotPaused {
         require((msg.value > 1), "Value must be greater than 1");
-        uint balance = address(msg.sender).balance;
-        require(balance >= msg.value, "Not enough money to split");
         uint valueSplited = msg.value.div(2);
         balances[bob] = balances[bob].add(valueSplited);
         balances[carol] = balances[carol].add(msg.value.sub(valueSplited));
