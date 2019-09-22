@@ -224,9 +224,10 @@ App = {
       var SplitterInstance;
       App.contracts.Splitter.deployed().then(function (instance) {
         SplitterInstance = instance;
-        return SplitterInstance.enoughBalance(amount)
+        return SplitterInstance.getBalance(account)
       }).then(function (result) {
-        if (result == true) {
+        var posible = bigInt(result).gt(amount);
+        if (posible) {
           return App.decoredSplitter.withdraw(amount, {
               from: account
             })
@@ -267,8 +268,8 @@ App = {
     var posible = bigInt(await App.getBalance(account)).gt(amount);
     if (posible) {
       return App.decoredSplitter.split(bobAddress, carolAddress, {
-        value: amount,  
-        from: account
+          value: amount,
+          from: account
         })
         .then(async function () {
           await App.minedTransaction().then(function (response) {

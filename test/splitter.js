@@ -1,8 +1,8 @@
 const Splitter = artifacts.require("Splitter.sol");
-const bigInt = require('../src/js/BigInteger.min.js');
 
 contract('Splitter', (accounts) => {
-  const BN = web3.utils.BN;
+  const BN = web3.utils.toBN;
+  const gasPrice = 10000;
   let splitterInstance, alice, bob, carol;
   [alice, bob, carol] = accounts;
   beforeEach("deploy new Splitter", function () {
@@ -45,20 +45,31 @@ contract('Splitter', (accounts) => {
     balanceCarol = new BN(await splitterInstance.getBalance(carol));
     const residue = amount - amountSplitted;
     const balanceCarolExpected = balanceCarol.add(new BN(residue));
+    // Alice Ethereum balance without value and transaction gas
+    const balanceAliceEthereum = new BN(await web3.eth.getBalance(alice));
 
     // Transaction.
-    await splitterInstance.split(bob, carol, {
+    const tx = await splitterInstance.split(bob, carol, {
       value: amount,
-      from: alice
+      from: alice,
+      gasPrice: gasPrice
     });
 
-    // Get balances of first and second account after the transactions.
+    // Calculate Alice balance expected.
+    gasUsed = new BN(tx.receipt.gasUsed);
+    gas = gasUsed.mul(new BN(gasPrice));
+    const gasAndAmount = gas.add(new BN(amount));
+    balanceAliceEthereumExpected = balanceAliceEthereum.sub(new BN(gasAndAmount));
+
+    // Get balances after the transactions.
     const balanceBobAfterTx = await splitterInstance.getBalance(bob);
     const balanceCarolAfterTx = await splitterInstance.getBalance(carol);
+    const balanceAliceEthereumAfterTx = await web3.eth.getBalance(alice);
 
     // Check
     assert.equal(balanceBobAfterTx.toString(10), balanceBobExpected.toString(10), "Balance error in account 1")
     assert.equal(balanceCarolAfterTx.toString(10), balanceCarolExpected.toString(10), "Balance error in account 2")
+    assert.equal(balanceAliceEthereumAfterTx.toString(10), balanceAliceEthereumExpected.toString(10), "Balance error in Alice Ethereum account")
   });
 
   it('should withdraw the amount from the contract', async () => {
@@ -66,8 +77,8 @@ contract('Splitter', (accounts) => {
     const accountContract = splitterInstance.address;
 
     // Setup the amount.
-    const amount = 2;
-    const amountSplitted = amount/2;
+    const amount = 20000;
+    const amountSplitted = amount / 2;
 
     // Transaction1.
     await splitterInstance.split(alice, carol, {
@@ -80,18 +91,29 @@ contract('Splitter', (accounts) => {
     const balanceContractExpected = balanceContract.sub(new BN(amountSplitted));
     balanceAlice = new BN(await splitterInstance.getBalance(alice));
     const balanceAliceExpected = balanceAlice.sub(new BN(amountSplitted));
+    // Alice Ethereum balance without value and transaction gas
+    const balanceAliceEthereum = new BN(await web3.eth.getBalance(alice));
 
     // Transaction2.
-    await splitterInstance.withdraw(amountSplitted, {
-      from: alice
+    const tx = await splitterInstance.withdraw(amountSplitted, {
+      from: alice,
+      gasPrice: gasPrice
     });
+
+    // Calculate Alice balance expected.
+    gasUsed = new BN(tx.receipt.gasUsed);
+    gas = gasUsed.mul(new BN(gasPrice));
+    const gasAndAmount = gas.sub(new BN(amountSplitted));
+    balanceAliceEthereumExpected = balanceAliceEthereum.sub(new BN(gasAndAmount));
 
     // Get balances after the transaction.
     const balanceContractAfterTx = await web3.eth.getBalance(accountContract);
     const balanceAliceAfterTx = await splitterInstance.getBalance(alice);
+    const balanceAliceEthereumAfterTx = await web3.eth.getBalance(alice);
 
     // Check
     assert.equal(balanceContractAfterTx.toString(10), balanceContractExpected.toString(10), "Balance error in Contract account")
     assert.equal(balanceAliceAfterTx.toString(10), balanceAliceExpected.toString(10), "Balance error in Alice account")
+    assert.equal(balanceAliceEthereumAfterTx.toString(10), balanceAliceEthereumExpected.toString(10), "Balance error in Alice Ethereum account")
   });
 });
