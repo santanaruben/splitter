@@ -444,7 +444,7 @@ App = {
     }
   },
 
-  // minedTransaction2: async function(txHash) {
+  // minedTransaction2: async function(func) {
   //   balance = promisify(cb => web3.eth.getBalance(address, cb))
   //   try {
   //     return balance
