@@ -21,9 +21,7 @@ hr {
 }
 
 #logSplit,
-#logWithdraw,
-#logEmergencyWithdraw,
-#logRefund {
+#logWithdraw {
   transition: .8s ease;
   z-index: 2;
   max-height: 34vh;
