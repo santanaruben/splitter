@@ -79,24 +79,38 @@ App = {
     var SplitterInstance;
     App.contracts.Splitter.deployed().then(function (instance) {
       SplitterInstance = instance;
-      return SplitterInstance.isPaused()
-    }).then(function (isPaused) {
-      if (isPaused == true) {
+      return SplitterInstance.isKilled()
+    }).then(function (isKilled) {
+      if (isKilled) {
         $("#activity").empty();
-        $("#activity").append(`<span class="badge badge-pill badge-warning">contract in pause</span>`);
+        $("#activity").append(`<span class="badge badge-pill badge-danger">contract is dead</span>`);
         $("#adminButtons").empty();
-        $("#adminButtons").append(`<button class="dropdown-item btn btn-success" type="button" id="resume" onclick="App.pauseResume()">Activate the contract</button>
-        <button class="dropdown-item btn btn-danger" type="button" id="kill" onclick="App.kill()">Kill the Contract</button>
-        `);
+        $("#adminButtons").append(`<button class="dropdown-item btn btn-success" type="button" id="emergencyWithdraw" onclick="App.emergencyWithdraw()">Withdraw all the funds from the contract</button>
+          `);
         document.getElementById('splitAmount').disabled = true;
         document.getElementById('withdraw').disabled = true;
       } else {
-        $("#activity").empty();
-        $("#activity").append(`<span class="badge badge-pill badge-success">contract active</span>`);
-        $("#adminButtons").empty();
-        $("#adminButtons").append(`<button class="dropdown-item btn btn-warning" type="button" id="pause" onclick="App.pauseResume()">Pause the contract</button>`);
-        document.getElementById('splitAmount').disabled = false;
-        document.getElementById('withdraw').disabled = false;
+        return SplitterInstance.isPaused().then(function (isPaused) {
+          if (isPaused == true) {
+            $("#activity").empty();
+            $("#activity").append(`<span class="badge badge-pill badge-warning">contract in pause</span>`);
+            $("#adminButtons").empty();
+            $("#adminButtons").append(`<button class="dropdown-item btn btn-success" type="button" id="resume" onclick="App.pauseResume()">Activate the contract</button>
+          <button class="dropdown-item btn btn-danger" type="button" id="kill" onclick="App.kill()">Kill the Contract</button>
+          `);
+            document.getElementById('splitAmount').disabled = true;
+            document.getElementById('withdraw').disabled = true;
+          } else {
+            $("#activity").empty();
+            $("#activity").append(`<span class="badge badge-pill badge-success">contract active</span>`);
+            $("#adminButtons").empty();
+            $("#adminButtons").append(`<button class="dropdown-item btn btn-warning" type="button" id="pause" onclick="App.pauseResume()">Pause the contract</button>`);
+            document.getElementById('splitAmount').disabled = false;
+            document.getElementById('withdraw').disabled = false;
+          }
+        }).catch(function (err) {
+          console.log(err);
+        });
       }
     }).catch(function (err) {
       console.log(err);
@@ -112,7 +126,29 @@ App = {
         await App.minedTransaction().then(function (response) {
           if (response) {
             $(".spinnerCube").empty();
-            showSuccess(txStatusUp, "You just killed the contract and withdrew all the funds", 100)
+            showSuccess(txStatusUp, "You just killed the contract", 100);
+            App.updateBalanceContract();
+            App.updateBalanceAlice();
+            App.checkActivity();
+          }
+        }) // wait till the promise resolves (*)
+      }).catch(function (err) {
+        $(".spinnerCube").empty();
+        console.log(err.message);
+        showAlert(txStatusUp, 'Transaction rejected: ' + err.message);
+      });
+  },
+
+  emergencyWithdraw: function () {
+    $(".spinnerCube").empty();
+    $("#txStatusUp").empty();
+    cubeSpinner('#txStatusUp');
+    return App.decoredSplitter.emergencyWithdraw()
+      .then(async function () {
+        await App.minedTransaction().then(function (response) {
+          if (response) {
+            $(".spinnerCube").empty();
+            showSuccess(txStatusUp, "You just withdrew all the funds from the contract", 100);
             App.updateBalanceContract();
             App.updateBalanceAlice();
           }
@@ -135,11 +171,11 @@ App = {
     }).then(function (isPaused) {
       if (isPaused == true) {
         return App.decoredSplitter.resume()
-        .then(async function () {
+          .then(async function () {
             await App.minedTransaction().then(function (response) {
               if (response) {
                 $(".spinnerCube").empty();
-                showSuccess(txStatusUp, "You just reactivated the contract", 100)
+                showSuccess(txStatusUp, "You just reactivated the contract", 100);
                 App.checkActivity();
               }
             }) // wait till the promise resolves (*)
@@ -150,11 +186,11 @@ App = {
           });
       } else {
         return App.decoredSplitter.pause()
-        .then(async function () {
+          .then(async function () {
             await App.minedTransaction().then(function (response) {
               if (response) {
                 $(".spinnerCube").empty();
-                showSuccess(txStatusUp, "You just paused the contract", 100)
+                showSuccess(txStatusUp, "You just paused the contract", 100);
                 App.checkActivity();
               }
             }) // wait till the promise resolves (*)
@@ -197,14 +233,14 @@ App = {
           return App.decoredSplitter.withdraw(amount, {
               from: account
             })
-          .then(async function () {
+            .then(async function () {
               await App.minedTransaction().then(function (response) {
                 if (response) {
                   $(".spinnerCube").empty();
                   App.updateBalanceAlice();
                   App.updateBalanceYours();
                   App.updateBalanceContract();
-                  showSuccess(txStatusUp, "You just made a withdraw from your account for the value of: " + amountEth, 100)
+                  showSuccess(txStatusUp, "You just made a withdraw from your account for the value of: " + amountEth, 100);
                 }
               }) // wait till the promise resolves (*)
             }).catch(function (err) {
@@ -237,7 +273,7 @@ App = {
           value: amount,
           from: account
         })
-      .then(async function () {
+        .then(async function () {
           await App.minedTransaction().then(function (response) {
             if (response) {
               $(".spinnerCube").empty();

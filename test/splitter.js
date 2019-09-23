@@ -57,7 +57,8 @@ contract('Splitter', (accounts) => {
 
     // Calculate Alice balance expected.
     gasUsed = new BN(tx.receipt.gasUsed);
-    const gasPrice = await web3.eth.getGasPrice();
+    // const gasPrice = await web3.eth.getGasPrice();
+    const gasPrice = tx.gasPrice;
     gas = gasUsed.mul(new BN(gasPrice));
     const gasAndAmount = gas.add(new BN(amount));
     balanceAliceEthereumExpected = balanceAliceEthereum.sub(new BN(gasAndAmount));
@@ -104,7 +105,8 @@ contract('Splitter', (accounts) => {
 
     // Calculate Alice balance expected.
     gasUsed = new BN(tx.receipt.gasUsed);
-    const gasPrice = await web3.eth.getGasPrice();
+    // const gasPrice = await web3.eth.getGasPrice();
+    const gasPrice = tx.gasPrice;
     gas = gasUsed.mul(new BN(gasPrice));
     const gasAndAmount = gas.sub(new BN(amountSplitted));
     balanceAliceEthereumExpected = balanceAliceEthereum.sub(new BN(gasAndAmount));

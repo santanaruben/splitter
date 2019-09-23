@@ -4,8 +4,8 @@ import "./Ownable.sol";
 
 contract Pausable is Ownable {
     bool private _paused;
-    event LogPaused(address account);
-    event LogResumed(address account);
+    event LogPaused(address indexed account);
+    event LogResumed(address indexed account);
 
     constructor (bool paused) public {
         _paused = paused;
@@ -33,9 +33,5 @@ contract Pausable is Ownable {
     modifier whenPaused() {
         require(_paused, "Contract not paused");
         _;
-    }
-
-    function kill() public onlyOwner whenPaused {
-        selfdestruct(address(uint160(owner())));
     }
 }
