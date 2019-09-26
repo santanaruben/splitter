@@ -193,3 +193,10 @@ function cubeSpinner(field) {
         </div>
       `);
 }
+
+function outSpinner() {
+  $(".spinnerCube").addClass("out");
+  $(".spinnerCube").delay(2000).fadeIn(0, function() {
+      $(".spinnerCube").remove();
+    });
+}

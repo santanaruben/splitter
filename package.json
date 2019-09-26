@@ -16,8 +16,5 @@
   "devDependencies": {
     "lite-server": "^2.5.4",
     "truffle": "^5.0.36"
-  },
-  "dependencies": {
-    "openzeppelin-solidity": "^2.3.0"
   }
 }

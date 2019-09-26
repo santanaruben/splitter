@@ -1,275 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Splitter</title>
-
-	<link href="css/bootstrap.min.css" rel="stylesheet">
-	<link href="css/mycss.css" rel="stylesheet">
-	<link href="css/spinner.css" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Splitter</title>
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/mycss.css" rel="stylesheet">
+  <link href="css/spinner.css" rel="stylesheet">
 </head>
 
 <body>
+  <nav class="navbar navbar-dark bg-dark">
+    <span class="navbar-brand mb-0 ml-4 h1">Splitter Project</span>
+    <span class="navbar-brand mb-0 mr-4 h1" id="amountContract"></span>
+    <span><span id="activity"></span>
+      <div class="btn-group" id="buttonAdmin" style="display:none">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+          aria-expanded="false">
+          Admin
+        </button>
+        <div class="dropdown-menu dropdown-menu-right" id="adminButtons">
+        </div>
+      </div>
+    </span>
 
-	<nav class="navbar navbar-dark bg-dark">
-		<span class="navbar-brand mb-0 ml-4 h1">Splitter Project</span>
-		<span class="navbar-brand mb-0 mr-4 h1" id="amountContract"></span>
-		<span><span id="activity"></span>
-			<div class="btn-group" id="buttonAdmin" style="display:none">
-				<button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown"
-					aria-haspopup="true" aria-expanded="false">
-					Admin
-				</button>
-				<div class="dropdown-menu dropdown-menu-right" id="adminButtons">
-				</div>
-			</div>
-		</span>
+  </nav>
+  <div class="container-fluid mt-2">
+    <div class="row" style="margin:auto;">
+      <div class="col scene_element fadeInDownB">
+        <div class="mt-2">
+          <div class="row" style="margin:auto;">
+            <div class="col col-md mt-4" style="padding: 0">
 
+              <div class="form-row">
+                <label for="aliceAddress" class="col-2 col-form-label mb-2">
+                  Alice address
+                </label>
+                <label id="aliceAddress" class="col-10 col-form-label" title="This is your address">
 
-	</nav>
+                </label>
+                <label for="aliceBalance" class="col-2 col-form-label mb-2">
+                  Alice balance
+                </label>
+                <div id="aliceBalance" class="col-5 col-form-label"
+                  title="This is your balance (in WEI) outside the contract">
+                </div>
+                <div class="col-1" style="font-size: 25px">
+                  =
+                </div>
+                <div id="aliceBalanceEth" class="col-4 col-form-label text-right"
+                  title="This is your balance (in ETH) outside the contract">
+                </div>
+              </div>
 
-	<div class="container-fluid mt-2">
-		<div class="row" style="margin:auto;">
-			<div class="col scene_element fadeInDownB">
-				<div class="mt-2">
-					<div class="row" style="margin:auto;">
-						<div class="col col-md mt-4" style="padding: 0">
+              <nav class="nav-pills nav-fill">
+                <div class="nav nav-tabs" id="nav-tab-principal" role="tablist">
+                  <a class="nav-item nav-link active" id="nav-splitAmount-tab" data-toggle="tab" href="#nav-splitAmount"
+                    role="tab" aria-controls="nav-splitAmount" aria-selected="false">Split</a>
+                  <a class="nav-item nav-link" id="nav-withdrawAmount-tab" data-toggle="tab" href="#nav-withdrawAmount"
+                    role="tab" aria-controls="nav-withdrawAmount" aria-selected="false">Withdraw</a>
+                </div>
+              </nav>
+              <div class="tab-content" id="nav-tabContent-principal">
 
-							<div class="form-row">
-								<label for="aliceAddress" class="col-2 col-form-label mb-2">
-									Alice address
-								</label>
-								<label id="aliceAddress" class="col-10 col-form-label" title="This is your address">
+                <div class="tab-pane fade show active" id="nav-splitAmount" role="tabpanel"
+                  aria-labelledby="nav-splitAmount-tab">
 
-								</label>
-								<label for="aliceBalance" class="col-2 col-form-label mb-2">
-									Alice balance
-								</label>
-								<div id="aliceBalance" class="col-5 col-form-label" title="This is your balance (in WEI) outside the contract">
-								</div>
-								<div class="col-1" style="font-size: 25px">
-									=
-								</div>
-								<div id="aliceBalanceEth" class="col-4 col-form-label text-right"
-									title="This is your balance (in ETH) outside the contract">
-								</div>
-							</div>
+                  <form class="mt-4" novalidate>
+                    <div class="form-row">
+                      <label style="cursor: pointer" for="amount" class="col-2 col-form-label mb-4">
+                        WEI Amount
+                      </label>
+                      <div class="col-5 splitClass">
+                        <input type="number" min="2" class="form-control" id="amountSplit"
+                          onkeypress="return numbersOnly(event)"
+                          onkeyup="document.getElementById('amountSplitEth').innerHTML = App.weiToEth(amountSplit.value); validateBigAmount('amountSplit')"
+                          placeholder="Amount (in WEI) you want to split" pattern="[(0-9)]{1,18}"  value="2" autofocus required>
+                        <div class="valid-feedback">
+                          Looks good!
+                        </div>
+                        <div class="invalid-feedback">
+                          Must be greater than one (don't be greedy!)
+                        </div>
+                      </div>
+                      <div class="col-1" style="font-size: 25px">=</div>
+                      <div id="amountSplitEth" class="col-4 col-form-label text-right"
+                        title="This is the amount (in ETH) you want to split">
+                      </div>
 
-							<nav class="nav-pills nav-fill">
-								<div class="nav nav-tabs" id="nav-tab-principal" role="tablist">
-									<a class="nav-item nav-link active" id="nav-splitAmount-tab" data-toggle="tab"
-										href="#nav-splitAmount" role="tab" aria-controls="nav-splitAmount"
-										aria-selected="false">Split</a>
-									<a class="nav-item nav-link" id="nav-withdrawAmount-tab" data-toggle="tab"
-										href="#nav-withdrawAmount" role="tab" aria-controls="nav-withdrawAmount"
-										aria-selected="false">Withdraw</a>
-								</div>
-							</nav>
-							<div class="tab-content" id="nav-tabContent-principal">
+                      <label style="cursor: pointer" for="bobAddress" class="col-2 col-form-label mb-4">
+                        Bob address
+                      </label>
+                      <div class="col-10 splitClass">
+                        <input type="text" class="form-control" id="bobAddress" onkeypress="return hexOnly(event)"
+                          onchange="App.updateBalanceBob()" onkeyup="App.updateBalanceBob()"
+                          placeholder="Bob account here" pattern="[(A-f),(0-9),(x)]{42}" value="0x79dC7405409cb3898bad8AC045cE49316a15c863" required>
+                        <div class="valid-feedback">
+                          I wish I was Bob!
+                        </div>
+                        <div class="invalid-feedback">
+                          Must be a valid ethereum address!
+                        </div>
+                      </div>
+                      <label style="cursor: pointer" for="bobBalance" class="col-2 col-form-label mb-4">
+                        Bob balance
+                      </label>
+                      <div id="bobBalance" class="col-5 col-form-label"
+                        title="This is the Bob balance (in WEI) inside the contract">
+                      </div>
+                      <div class="col-1" style="font-size: 25px">=</div>
+                      <div id="bobBalanceEth" class="col-4 col-form-label text-right"
+                        title="This is the Bob balance (in ETH) inside the contract">
+                      </div>
+                      <label style="cursor: pointer" for="carolAddress" class="col-2 col-form-label mb-4">
+                        Carol address
+                      </label>
+                      <div class="col-10 splitClass">
+                        <input type="text" class="form-control" id="carolAddress" onkeypress="return hexOnly(event)"
+                          onchange="App.updateBalanceCarol()" onkeyup="App.updateBalanceCarol()"
+                          placeholder="Carol account here" pattern="[(A-f),(0-9),(x)]{42}" value="0xE56733eBDaa6364440bD5e4A81799D46aBf19C5a" required>
+                        <div class="valid-feedback">
+                          Carol will clap with her ears for so much happiness!
+                        </div>
+                        <div class="invalid-feedback">
+                          Must be a valid ethereum address!
+                        </div>
+                      </div>
+                      <label style="cursor: pointer" for="carolBalance" class="col-2 col-form-label mb-4">
+                        Carol balance
+                      </label>
+                      <div id="carolBalance" class="col-5 col-form-label"
+                        title="This is the Carol balance (in WEI) inside the contract">
+                      </div>
+                      <div class="col-1" style="font-size: 25px">=</div>
+                      <div id="carolBalanceEth" class="col-4 col-form-label text-right"
+                        title="This is the Carol balance (in Eth) inside the contract">
+                      </div>
+                    </div>
+                  </form>
 
-								<div class="tab-pane fade show active" id="nav-splitAmount" role="tabpanel"
-									aria-labelledby="nav-splitAmount-tab">
+                  <div class="text-center">
+                    <button id="splitAmount" class="btn btn-success" style="margin: 4px;">
+                      Split amount
+                    </button>
+                  </div>
 
-									<form class="mt-4" novalidate>
-										<div class="form-row">
-											<label style="cursor: pointer" for="amount"
-												class="col-2 col-form-label mb-4">
-												WEI Amount
-											</label>
-											<div class="col-5 splitClass">
-												<input type="number" min="2" class="form-control" id="amountSplit"
-													onkeypress="return numbersOnly(event)"
-													onkeyup="document.getElementById('amountSplitEth').innerHTML = App.weiToEth(amountSplit.value); validateBigAmount('amountSplit')"
-													placeholder="Amount (in WEI) you want to split"
-													pattern="[(0-9)]{1,18}" autofocus required>
-												<div class="valid-feedback">
-													Looks good!
-												</div>
-												<div class="invalid-feedback">
-													Must be greater than one (don't be greedy!)
-												</div>
-											</div>
-											<div class="col-1" style="font-size: 25px">=</div>
-											<div id="amountSplitEth" class="col-4 col-form-label text-right"
-												title="This is the amount (in ETH) you want to split">
-											</div>
+                </div>
+                <div class="tab-pane fade" id="nav-withdrawAmount" role="tabpanel"
+                  aria-labelledby="nav-withdrawAmount-tab">
 
-											<label style="cursor: pointer" for="bobAddress"
-												class="col-2 col-form-label mb-4">
-												Bob address
-											</label>
-											<div class="col-10 splitClass">
-												<input type="text" class="form-control" id="bobAddress"
-													onkeypress="return hexOnly(event)" onchange="App.updateBalanceBob()"
-													onkeyup="App.updateBalanceBob()" placeholder="Bob account here"
-													pattern="[(A-f),(0-9),(x)]{42}" required>
-												<div class="valid-feedback">
-													I wish I was Bob!
-												</div>
-												<div class="invalid-feedback">
-													Must be a valid ethereum address!
-												</div>
-											</div>
-											<label style="cursor: pointer" for="bobBalance"
-												class="col-2 col-form-label mb-4">
-												Bob balance
-											</label>
-											<div id="bobBalance" class="col-5 col-form-label"
-												title="This is the Bob balance (in WEI) inside the contract">
-											</div>
-											<div class="col-1" style="font-size: 25px">=</div>
-											<div id="bobBalanceEth" class="col-4 col-form-label text-right"
-												title="This is the Bob balance (in ETH) inside the contract">
-											</div>
-											<label style="cursor: pointer" for="carolAddress"
-												class="col-2 col-form-label mb-4">
-												Carol address
-											</label>
-											<div class="col-10 splitClass">
-												<input type="text" class="form-control" id="carolAddress"
-													onkeypress="return hexOnly(event)"
-													onchange="App.updateBalanceCarol()"
-													onkeyup="App.updateBalanceCarol()" placeholder="Carol account here"
-													pattern="[(A-f),(0-9),(x)]{42}" required>
-												<div class="valid-feedback">
-													Carol will clap with her ears for so much happiness!
-												</div>
-												<div class="invalid-feedback">
-													Must be a valid ethereum address!
-												</div>
-											</div>
-											<label style="cursor: pointer" for="carolBalance"
-												class="col-2 col-form-label mb-4">
-												Carol balance
-											</label>
-											<div id="carolBalance" class="col-5 col-form-label"
-												title="This is the Carol balance (in WEI) inside the contract">
-											</div>
-											<div class="col-1" style="font-size: 25px">=</div>
-											<div id="carolBalanceEth" class="col-4 col-form-label text-right"
-												title="This is the Carol balance (in Eth) inside the contract">
-											</div>
-										</div>
-									</form>
+                  <form class="mt-4" novalidate>
+                    <div class="form-row">
+                      <label for="yourBalance" class="col-2 col-form-label mb-2">
+                        Your balance
+                      </label>
+                      <div id="yourBalance" class="col-5 col-form-label"
+                        title="This is your balance (in WEI) inside the contract">
+                      </div>
+                      <div class="col-1" style="font-size: 25px">
+                        =
+                      </div>
+                      <div id="yourBalanceEth" class="col-4 col-form-label text-right"
+                        title="This is your balance (in ETH) inside the contract">
+                      </div>
+                      <label style="cursor: pointer" for="amount" class="col-2 col-form-label mb-4">
+                        WEI Amount
+                      </label>
+                      <div class="col-5 withdrawClass">
+                        <input type="number" min="2" class="form-control" id="amountWithdraw"
+                          onkeypress="return numbersOnly(event)"
+                          onkeyup="document.getElementById('amountWithdrawEth').innerHTML = App.weiToEth(amountWithdraw.value); validateBigAmount('amountWithdraw')"
+                          placeholder="Amount (in WEI) you want to withdraw" pattern="[(0-9)]{1,18}" autofocus required>
+                        <div class="valid-feedback">
+                          Looks good!
+                        </div>
+                        <div class="invalid-feedback">
+                          Must be greater than one
+                        </div>
+                      </div>
+                      <div class="col-1" style="font-size: 25px">=</div>
+                      <div id="amountWithdrawEth" class="col-4 col-form-label text-right"
+                        title="This is the amount (in ETH) you want to withdraw">
+                      </div>
+                    </div>
+                  </form>
 
-									<div class="text-center">
-										<button id="splitAmount" class="btn btn-success" style="margin: 4px;">
-											Split amount
-										</button>
-									</div>
+                  <div class="text-center">
+                    <button id="withdraw" class="btn btn-warning" style="margin: 4px;">
+                      Withdraw amount
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-								</div>
-								<div class="tab-pane fade" id="nav-withdrawAmount" role="tabpanel"
-									aria-labelledby="nav-withdrawAmount-tab">
-
-									<form class="mt-4" novalidate>
-										<div class="form-row">
-
-												<label for="yourBalance" class="col-2 col-form-label mb-2">
-														Your balance
-													</label>
-													<div id="yourBalance" class="col-5 col-form-label" title="This is your balance (in WEI) inside the contract">
-													</div>
-													<div class="col-1" style="font-size: 25px">
-														=
-													</div>
-													<div id="yourBalanceEth" class="col-4 col-form-label text-right"
-														title="This is your balance (in ETH) inside the contract">
-													</div>
-
-											<label style="cursor: pointer" for="amount"
-												class="col-2 col-form-label mb-4">
-												WEI Amount
-											</label>
-											<div class="col-5 withdrawClass">
-												<input type="number" min="2" class="form-control" id="amountWithdraw"
-													onkeypress="return numbersOnly(event)"
-													onkeyup="document.getElementById('amountWithdrawEth').innerHTML = App.weiToEth(amountWithdraw.value); validateBigAmount('amountWithdraw')"
-													placeholder="Amount (in WEI) you want to withdraw"
-													pattern="[(0-9)]{1,18}" autofocus required>
-												<div class="valid-feedback">
-													Looks good!
-												</div>
-												<div class="invalid-feedback">
-													Must be greater than one
-												</div>
-											</div>
-											<div class="col-1" style="font-size: 25px">=</div>
-											<div id="amountWithdrawEth" class="col-4 col-form-label text-right"
-												title="This is the amount (in ETH) you want to withdraw">
-											</div>
-
-										</div>
-									</form>
-
-									<div class="text-center">
-										<button id="withdraw" class="btn btn-warning" style="margin: 4px;">
-											Withdraw amount
-										</button>
-									</div>
-
-								</div>
-							</div>
-
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div class="col col-md-4" id="outputScreen">
-				<h5 class=" text-center ribbon4 scene_element scene_element--fadeinright">Current Transaction</h5>
-				<div id="txStatusUp" style="min-height: 26vh;"></div>
-				<h5 class=" text-center ribbon4 scene_element scene_element--fadeinright">Logs</h5>
-				<!--<hr> class="container-fluid"-->
-				<div>
-					<div>
-						<div class="row">
-							<div class="col">
-
-								<nav class="nav-fill">
-									<div class="nav nav-tabs" id="nav-tab" role="tablist">
-										<a class="nav-item nav-link active" id="nav-split-tab" data-toggle="tab"
-											href="#nav-split" role="tab" aria-controls="nav-split"
-											aria-selected="false">Split</a>
-										<a class="nav-item nav-link" id="nav-withdraw-tab" data-toggle="tab"
-											href="#nav-withdraw" role="tab" aria-controls="nav-withdraw"
-											aria-selected="false">Withdraw</a>
-									</div>
-								</nav>
-								<div class="tab-content" id="nav-tabContent">
-									<div class="tab-pane fade show active" id="nav-split" role="tabpanel"
-										aria-labelledby="nav-split-tab">
-										<div id="logSplit" class="col">
-
-										</div>
-									</div>
-									<div class="tab-pane fade" id="nav-withdraw" role="tabpanel"
-										aria-labelledby="nav-withdraw-tab">
-										<div id="logWithdraw" class="col">
-
-										</div>
-									</div>
-								</div>
-
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<script src="js/jquery-3.3.1.min.js"></script>
-		<script src="js/bootstrap.js"></script>
-		<script src="js/truffle-contract.js" charset="UTF-8"></script>
-		<script src="js/BigInteger.min.js" charset="UTF-8"></script>
-		<script src="js/validations.js" charset="UTF-8"></script>
-		<script src="js/promisify.js" charset="UTF-8"></script>
-		<script src="js/app.js" charset="UTF-8"></script>
-		<script src="js/assist.min.js"></script>
-		<script src="js/blocknative.js"></script>
-</body>
+      <div class="col col-md-4" id="outputScreen">
+        <h5 class=" text-center ribbon4 scene_element scene_element--fadeinright">Current Transaction</h5>
+        <div id="txStatusUp" style="min-height: 26vh;"></div>
+        <h5 class=" text-center ribbon4 scene_element scene_element--fadeinright">Logs</h5>
+        <div>
+          <div>
+            <div class="row">
+              <div class="col">
+                <nav class="nav-fill">
+                  <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                    <a class="nav-item nav-link active" id="nav-split-tab" data-toggle="tab" href="#nav-split"
+                      role="tab" aria-controls="nav-split" aria-selected="false">Split</a>
+                    <a class="nav-item nav-link" id="nav-withdraw-tab" data-toggle="tab" href="#nav-withdraw" role="tab"
+                      aria-controls="nav-withdraw" aria-selected="false">Withdraw</a>
+                  </div>
+                </nav>
+                <div class="tab-content" id="nav-tabContent">
+                  <div class="tab-pane fade show active" id="nav-split" role="tabpanel" aria-labelledby="nav-split-tab">
+                    <div id="logSplit" class="col">
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" id="nav-withdraw" role="tabpanel" aria-labelledby="nav-withdraw-tab">
+                    <div id="logWithdraw" class="col">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/truffle-contract.min.js" charset="UTF-8"></script>
+    <script src="js/BigInteger.min.js" charset="UTF-8"></script>
+    <script src="js/validations.js" charset="UTF-8"></script>
+    <script src="js/promisify.js" charset="UTF-8"></script>
+    <script src="js/web3-1.2.0.min.js" charset="UTF-8"></script>
+    <script src="js/app.js" charset="UTF-8"></script>
+  </body>
 
 </html>

@@ -5,7 +5,7 @@ contract('Splitter', (accounts) => {
   let splitterInstance, alice, bob, carol;
   [alice, bob, carol] = accounts;
   beforeEach("deploy new Splitter", function () {
-    return Splitter.new(false,{
+    return Splitter.new(false, {
         from: alice
       })
       .then(instance => splitterInstance = instance);
@@ -21,7 +21,7 @@ contract('Splitter', (accounts) => {
     const balanceCarolExpected = balanceCarol.add(new BN(amountSplitted));
 
     // Transaction.
-    await splitterInstance.split(bob, carol, {
+    const tx = await splitterInstance.split(bob, carol, {
       value: amount,
       from: alice
     });
@@ -38,7 +38,7 @@ contract('Splitter', (accounts) => {
   it('should split the odd amount correctly', async () => {
     // Calculate balances expected.
     const amount = 3;
-    const amountSplitted = Math.floor(amount/2);
+    const amountSplitted = Math.floor(amount / 2);
     const remainder = amount % 2;
     balanceAlice = new BN(await splitterInstance.getBalance(alice));
     const balanceAliceExpected = balanceAlice.add(new BN(remainder));
@@ -54,11 +54,11 @@ contract('Splitter', (accounts) => {
       value: amount,
       from: alice
     });
+    const transaction = await web3.eth.getTransaction(tx.tx);
+    const gasPrice = transaction.gasPrice;
 
     // Calculate Alice balance expected.
     gasUsed = new BN(tx.receipt.gasUsed);
-    // const gasPrice = await web3.eth.getGasPrice();
-    const gasPrice = tx.gasPrice;
     gas = gasUsed.mul(new BN(gasPrice));
     const gasAndAmount = gas.add(new BN(amount));
     balanceAliceEthereumExpected = balanceAliceEthereum.sub(new BN(gasAndAmount));
@@ -102,11 +102,11 @@ contract('Splitter', (accounts) => {
     const tx = await splitterInstance.withdraw(amountSplitted, {
       from: alice
     });
+    const transaction = await web3.eth.getTransaction(tx.tx);
+    const gasPrice = transaction.gasPrice;
 
     // Calculate Alice balance expected.
     gasUsed = new BN(tx.receipt.gasUsed);
-    // const gasPrice = await web3.eth.getGasPrice();
-    const gasPrice = tx.gasPrice;
     gas = gasUsed.mul(new BN(gasPrice));
     const gasAndAmount = gas.sub(new BN(amountSplitted));
     balanceAliceEthereumExpected = balanceAliceEthereum.sub(new BN(gasAndAmount));
